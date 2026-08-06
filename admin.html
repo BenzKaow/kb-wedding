@@ -121,17 +121,7 @@
 
     <!-- GALLERY -->
     <div class="tab-panel" id="panel-gallery">
-      <div class="card upload-box" style="margin-bottom:24px;">
-        <h3 style="margin-top:0; margin-bottom:10px;">เพิ่มรูปภาพ/วีดีโอจากหลังบ้าน</h3>
-        <p style="color:var(--text-soft); font-size:0.88rem; margin-bottom:16px;">สำหรับรูป/วีดีโอที่เจ้าบ่าวเจ้าสาวอยากอัพโหลดเอง แยกต่างหากจากที่แขกอัพโหลดในหน้าเว็บ</p>
-        <input type="file" id="admin-file-input" accept="image/*,video/*" style="display:none">
-        <input type="text" id="admin-uploader-caption" class="form-control" placeholder="คำบรรยายภาพ (ไม่บังคับ)" style="max-width:320px; margin:0 auto 12px;">
-        <button class="btn secondary" id="admin-pick-file-btn">เลือกไฟล์เพื่ออัพโหลด</button>
-        <div id="admin-upload-status" style="margin-top:14px;"></div>
-        <p style="font-size:0.78rem; color:var(--text-soft); margin-bottom:0;">รองรับรูปภาพไม่เกิน 12MB และวีดีโอไม่เกิน 60MB</p>
-      </div>
-
-      <p style="color:var(--text-soft); margin-bottom:16px;">รูปภาพและวีดีโอทั้งหมดในเว็บ (ทั้งที่แขกอัพโหลดและที่เพิ่มเอง) — กดลบเพื่อนำออกจากเว็บ</p>
+      <p style="color:var(--text-soft); margin-bottom:16px;">จัดการรูปภาพและวีดีโอทั้งหมดที่แขกอัพโหลด (กดลบเพื่อนำออกจากเว็บ)</p>
       <div class="gallery-grid" id="admin-gallery-grid"></div>
     </div>
   </div>
@@ -395,49 +385,6 @@
       });
     });
   }
-
-  // ---------- Admin upload to gallery ----------
-  var adminFileInput = document.getElementById('admin-file-input');
-  var adminPickBtn = document.getElementById('admin-pick-file-btn');
-  var adminUploadStatus = document.getElementById('admin-upload-status');
-
-  adminPickBtn.addEventListener('click', function () { adminFileInput.click(); });
-
-  adminFileInput.addEventListener('change', function () {
-    var file = adminFileInput.files[0];
-    if (!file) return;
-    var isVideo = file.type.indexOf('video') === 0;
-    var maxSize = isVideo ? 60 * 1024 * 1024 : 12 * 1024 * 1024;
-    if (file.size > maxSize) {
-      adminUploadStatus.innerHTML = '<div class="alert error">ไฟล์มีขนาดใหญ่เกินไป (สูงสุด ' + (isVideo ? '60MB สำหรับวีดีโอ' : '12MB สำหรับรูปภาพ') + ')</div>';
-      return;
-    }
-    adminUploadStatus.innerHTML = '<p style="color:var(--text-soft);">กำลังอัพโหลด "' + esc(file.name) + '"...</p>';
-    var reader = new FileReader();
-    reader.onload = function () {
-      var base64 = reader.result.split(',')[1];
-      window.WeddingAPI.post('uploadMedia', {
-        filename: file.name,
-        mimeType: file.type,
-        base64Data: base64,
-        type: isVideo ? 'video' : 'image',
-        caption: document.getElementById('admin-uploader-caption').value,
-        uploaderName: 'เจ้าบ่าว-เจ้าสาว'
-      }).then(function (res) {
-        if (res && res.success) {
-          adminUploadStatus.innerHTML = '<div class="alert success">อัพโหลดสำเร็จแล้วค่ะ 🎉</div>';
-          adminFileInput.value = '';
-          document.getElementById('admin-uploader-caption').value = '';
-          loadGallery();
-        } else {
-          adminUploadStatus.innerHTML = '<div class="alert error">อัพโหลดไม่สำเร็จ: ' + esc((res && res.error) || 'unknown') + '</div>';
-        }
-      }).catch(function () {
-        adminUploadStatus.innerHTML = '<div class="alert error">เชื่อมต่อไม่สำเร็จ กรุณาลองใหม่อีกครั้ง</div>';
-      });
-    };
-    reader.readAsDataURL(file);
-  });
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
