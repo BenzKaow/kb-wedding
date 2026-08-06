@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เก้า &amp; เบ๊นซ์ | งานแต่งงาน 9.10.2569</title>
+<meta name="description" content="ขอเรียนเชิญร่วมเป็นเกียรติในพิธีมงคลสมรส เก้า & เบ๊นซ์ 9 ตุลาคม 2569 ณ ริมธารา พระราม 3">
+<link rel="stylesheet" href="css/style.css">
+<script src="js/vendor/qrcode.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <div class="brand">เก้า &amp; เบ๊นซ์</div>
+    <div class="links">
+      <a href="#rsvp">RSVP</a>
+      <a href="#location">แผนที่</a>
+      <a href="#gift">ร่วมยินดี</a>
+      <a href="gallery.html">รูป/วีดีโอ</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="container">
+    <div class="hero-card">
+      <img src="assets/invitation-front.jpg" alt="การ์ดแต่งงาน เก้า และ เบ๊นซ์">
+    </div>
+    <div class="names-en">Chutikarn <span style="color:var(--sage)">&amp;</span> Mongkon</div>
+    <h1>เก้า &amp; เบ๊นซ์</h1>
+    <p style="color:var(--text-soft); margin-top:8px;">ขอเรียนเชิญร่วมเป็นเกียรติในพิธีมงคลสมรส</p>
+    <div class="date-badge" id="date-badge">9 ตุลาคม 2569 · 16.00 - 22.00 น.</div>
+
+    <div class="countdown" id="countdown">
+      <div class="box"><div class="num" id="cd-days">--</div><div class="lbl">วัน</div></div>
+      <div class="box"><div class="num" id="cd-hours">--</div><div class="lbl">ชั่วโมง</div></div>
+      <div class="box"><div class="num" id="cd-mins">--</div><div class="lbl">นาที</div></div>
+      <div class="box"><div class="num" id="cd-secs">--</div><div class="lbl">วินาที</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- PARENTS -->
+<section class="section">
+  <div class="container">
+    <div class="card">
+      <div class="parents-grid">
+        <div>
+          <div class="side-label">ฝ่ายเจ้าสาว</div>
+          <p style="margin:0">พ.จ.อ.เฉลิมศักดิ์ ณ สงขลา (บิดา)<br>นาง สุพัตรา ณ สงขลา (มารดา)</p>
+        </div>
+        <div>
+          <div class="side-label">ฝ่ายเจ้าบ่าว</div>
+          <p style="margin:0">นาย ปุญญวัจน์ นิลวงษ์ (บิดา)<br>นาง ปรียา หอยสังข์ (มารดา)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCHEDULE -->
+<section class="section" style="background:var(--cream-deep)">
+  <div class="container">
+    <h2 class="section-title">กำหนดการ</h2>
+    <p class="section-sub">วันศุกร์ที่ 9 ตุลาคม 2569 · ริมธารา พระราม 3 (ห้อง ริมนที)</p>
+    <div class="schedule-list" id="schedule-list"></div>
+  </div>
+</section>
+
+<!-- THEME / DRESS CODE -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">ธีมสีของงาน</h2>
+    <p class="section-sub">แขกสามารถเลือกใส่โทนสีพาสเทลใดก็ได้ตามใจชอบ 🌸</p>
+    <div class="theme-colors" id="theme-colors"></div>
+  </div>
+</section>
+
+<!-- RSVP -->
+<section class="section" id="rsvp" style="background:var(--cream-deep)">
+  <div class="container">
+    <h2 class="section-title">ยืนยันการเข้าร่วมงาน</h2>
+    <p class="section-sub">รบกวนแขกทุกท่านกรุณายืนยันเพื่อความสะดวกในการเตรียมงานค่ะ/ครับ</p>
+
+    <div class="card" style="max-width:480px; margin:0 auto;">
+      <form id="rsvp-form">
+        <div class="form-group autocomplete-wrap">
+          <label for="rsvp-name">ชื่อ-นามสกุล / กลุ่มของท่าน</label>
+          <input type="text" id="rsvp-name" class="form-control" placeholder="พิมพ์ชื่อของท่าน..." autocomplete="off" required>
+          <div class="autocomplete-list" id="rsvp-suggestions" style="display:none;"></div>
+          <input type="hidden" id="rsvp-guest-id">
+        </div>
+
+        <div class="form-group">
+          <label>ท่านจะเข้าร่วมงานหรือไม่?</label>
+          <div class="radio-row">
+            <label class="radio-pill yes" id="pill-yes">
+              <input type="radio" name="attending" value="yes"> 💚 มาร่วมงาน
+            </label>
+            <label class="radio-pill no" id="pill-no">
+              <input type="radio" name="attending" value="no"> 💔 ไม่สะดวก
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group" id="num-attending-group">
+          <label for="rsvp-num">จำนวนผู้ร่วมงาน (รวมท่าน)</label>
+          <input type="number" id="rsvp-num" class="form-control" min="1" value="1">
+        </div>
+
+        <div class="form-group">
+          <label for="rsvp-phone">เบอร์โทรติดต่อ (ไม่บังคับ)</label>
+          <input type="tel" id="rsvp-phone" class="form-control" placeholder="08xxxxxxxx">
+        </div>
+
+        <div class="form-group">
+          <label for="rsvp-message">ข้อความอวยพร (ไม่บังคับ)</label>
+          <textarea id="rsvp-message" class="form-control" rows="3" placeholder="ส่งคำอวยพรให้บ่าวสาว..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-block" id="rsvp-submit-btn">ส่งคำตอบยืนยัน</button>
+        <div id="rsvp-alert"></div>
+      </form>
+      <p style="text-align:center; font-size:0.82rem; color:var(--text-soft); margin-top:14px;">
+        ขออภัยหากมิได้เรียนเชิญด้วยตัวเอง
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- LOCATION -->
+<section class="section" id="location">
+  <div class="container">
+    <h2 class="section-title">สถานที่จัดงาน</h2>
+    <p class="section-sub">ริมธารา Rimtara พระราม 3 (ห้อง ริมนที) อาคาร Sv City</p>
+    <div class="map-frame">
+      <iframe
+        src="https://maps.google.com/maps?q=13.6719926,100.5442374&hl=th&z=16&ie=UTF8&iwloc=&output=embed"
+        loading="lazy" allowfullscreen></iframe>
+    </div>
+    <div style="text-align:center;">
+      <a class="map-btn" href="https://maps.app.goo.gl/Sv85fhQEZdon6jDn6" target="_blank" rel="noopener">เปิดใน Google Maps →</a>
+    </div>
+  </div>
+</section>
+
+<!-- GIFT / PROMPTPAY -->
+<section class="section" id="gift" style="background:var(--cream-deep)">
+  <div class="container">
+    <h2 class="section-title">ร่วมยินดีกับบ่าวสาว</h2>
+    <p class="section-sub">สำหรับท่านที่ไม่สะดวกมาร่วมงาน แต่อยากร่วมอวยพรเป็นสินน้ำใจ สามารถสแกน QR ด้านล่างนี้ได้ค่ะ</p>
+    <div class="qr-box">
+      <div id="promptpay-qr"></div>
+      <div class="name">มงคล นิลวงษ์</div>
+      <div class="msg">ร่วมยินดีกับ เก้า &amp; เบ๊นซ์</div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <span class="script-accent">Chutikarn &amp; Mongkon</span>
+  9 ตุลาคม 2569 · ริมธารา พระราม 3 · #kbhappytime
+</footer>
+
+<script src="js/config.js"></script>
+<script src="js/promptpay.js"></script>
+<script src="js/api.js"></script>
+<script>
+(function () {
+  var cfg = window.WEDDING_CONFIG;
+
+  // ---------- Schedule ----------
+  var scheduleEl = document.getElementById('schedule-list');
+  cfg.schedule.forEach(function (s) {
+    var div = document.createElement('div');
+    div.className = 'schedule-item';
+    div.innerHTML = '<span class="icon">' + s.icon + '</span><span class="time">' + s.time + '</span><span>' + s.label + '</span>';
+    scheduleEl.appendChild(div);
+  });
+
+  // ---------- Theme colors ----------
+  var themeEl = document.getElementById('theme-colors');
+  cfg.themeColors.forEach(function (c) {
+    var div = document.createElement('div');
+    div.className = 'theme-swatch';
+    div.innerHTML = '<div class="dot" style="background:' + c.hex + '"></div>' + c.name;
+    themeEl.appendChild(div);
+  });
+
+  // ---------- Countdown ----------
+  var target = new Date(cfg.weddingDateISO).getTime();
+  function tick() {
+    var now = Date.now();
+    var diff = target - now;
+    if (diff < 0) diff = 0;
+    var d = Math.floor(diff / (1000 * 60 * 60 * 24));
+    var h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    var m = Math.floor((diff / (1000 * 60)) % 60);
+    var s = Math.floor((diff / 1000) % 60);
+    document.getElementById('cd-days').textContent = d;
+    document.getElementById('cd-hours').textContent = ('0' + h).slice(-2);
+    document.getElementById('cd-mins').textContent = ('0' + m).slice(-2);
+    document.getElementById('cd-secs').textContent = ('0' + s).slice(-2);
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  // ---------- PromptPay QR ----------
+  var payload = window.PromptPay.generatePayload(cfg.promptpay.phone);
+  var qr = window.qrcode(0, 'M');
+  qr.addData(payload);
+  qr.make();
+  document.getElementById('promptpay-qr').innerHTML = qr.createSvgTag({ cellSize: 5, margin: 4 });
+
+  // ---------- RSVP form ----------
+  var pillYes = document.getElementById('pill-yes');
+  var pillNo = document.getElementById('pill-no');
+  var numGroup = document.getElementById('num-attending-group');
+  var guestIdInput = document.getElementById('rsvp-guest-id');
+  var nameInput = document.getElementById('rsvp-name');
+  var suggestBox = document.getElementById('rsvp-suggestions');
+
+  pillYes.addEventListener('click', function () {
+    pillYes.classList.add('selected', 'yes');
+    pillNo.classList.remove('selected', 'no');
+    pillYes.querySelector('input').checked = true;
+    numGroup.style.display = 'block';
+  });
+  pillNo.addEventListener('click', function () {
+    pillNo.classList.add('selected', 'no');
+    pillYes.classList.remove('selected', 'yes');
+    pillNo.querySelector('input').checked = true;
+    numGroup.style.display = 'none';
+  });
+
+  var searchTimer;
+  nameInput.addEventListener('input', function () {
+    guestIdInput.value = '';
+    var q = nameInput.value.trim();
+    clearTimeout(searchTimer);
+    if (q.length < 2 || !window.WeddingAPI.isConfigured()) {
+      suggestBox.style.display = 'none';
+      return;
+    }
+    searchTimer = setTimeout(function () {
+      window.WeddingAPI.get('searchGuests', { q: q }).then(function (res) {
+        var results = (res && res.results) || [];
+        if (results.length === 0) { suggestBox.style.display = 'none'; return; }
+        suggestBox.innerHTML = '';
+        results.forEach(function (g) {
+          var d = document.createElement('div');
+          d.textContent = (g.firstName + ' ' + (g.lastName || '')).trim() + (g.position ? ' · ' + g.position : '');
+          d.addEventListener('click', function () {
+            nameInput.value = (g.firstName + ' ' + (g.lastName || '')).trim();
+            guestIdInput.value = g.id;
+            suggestBox.style.display = 'none';
+          });
+          suggestBox.appendChild(d);
+        });
+        suggestBox.style.display = 'block';
+      }).catch(function () { suggestBox.style.display = 'none'; });
+    }, 250);
+  });
+  document.addEventListener('click', function (e) {
+    if (!suggestBox.contains(e.target) && e.target !== nameInput) suggestBox.style.display = 'none';
+  });
+
+  document.getElementById('rsvp-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var alertEl = document.getElementById('rsvp-alert');
+    var attendingEl = document.querySelector('input[name="attending"]:checked');
+    if (!attendingEl) {
+      alertEl.innerHTML = '<div class="alert error">กรุณาเลือกว่าจะมาร่วมงานหรือไม่ค่ะ</div>';
+      return;
+    }
+    if (!window.WeddingAPI.isConfigured()) {
+      alertEl.innerHTML = '<div class="alert error">ระบบยังไม่ได้เชื่อมต่อ API (สำหรับผู้ดูแล: ใส่ API_URL ใน js/config.js)</div>';
+      return;
+    }
+    var nameParts = nameInput.value.trim().split(/\s+/);
+    var btn = document.getElementById('rsvp-submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'กำลังส่ง...';
+
+    window.WeddingAPI.post('submitRSVP', {
+      guestId: guestIdInput.value,
+      firstName: nameParts[0] || '',
+      lastName: nameParts.slice(1).join(' ') || '',
+      attending: attendingEl.value,
+      numAttending: document.getElementById('rsvp-num').value,
+      phone: document.getElementById('rsvp-phone').value,
+      message: document.getElementById('rsvp-message').value
+    }).then(function (res) {
+      btn.disabled = false;
+      btn.textContent = 'ส่งคำตอบยืนยัน';
+      if (res && res.success) {
+        alertEl.innerHTML = '<div class="alert success">ขอบคุณค่ะ! บันทึกคำตอบของท่านเรียบร้อยแล้ว 🌸</div>';
+        document.getElementById('rsvp-form').reset();
+        pillYes.classList.remove('selected', 'yes');
+        pillNo.classList.remove('selected', 'no');
+      } else {
+        alertEl.innerHTML = '<div class="alert error">เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้งค่ะ</div>';
+      }
+    }).catch(function () {
+      btn.disabled = false;
+      btn.textContent = 'ส่งคำตอบยืนยัน';
+      alertEl.innerHTML = '<div class="alert error">เชื่อมต่อไม่สำเร็จ กรุณาลองใหม่อีกครั้งค่ะ</div>';
+    });
+  });
+})();
+</script>
+</body>
+</html>

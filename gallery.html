@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>รูปภาพ &amp; วีดีโอ | เก้า &amp; เบ๊นซ์</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <div class="brand">เก้า &amp; เบ๊นซ์</div>
+    <div class="links">
+      <a href="index.html">หน้าแรก</a>
+      <a href="index.html#rsvp">RSVP</a>
+      <a href="gallery.html" class="active">รูป/วีดีโอ</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" style="padding-bottom:20px;">
+  <div class="container">
+    <h1>คลังรูปภาพ &amp; วีดีโอ</h1>
+    <p style="color:var(--text-soft); margin-top:8px;">ร่วมแบ่งปันความทรงจำดีๆ ในงานของ เก้า &amp; เบ๊นซ์ 📸</p>
+  </div>
+</header>
+
+<section class="section" style="padding-top:0">
+  <div class="container">
+
+    <div class="upload-box">
+      <p style="margin-top:0; font-weight:500;">เพิ่มรูปภาพหรือวีดีโอของท่าน</p>
+      <input type="file" id="file-input" accept="image/*,video/*" style="display:none">
+      <input type="text" id="uploader-name" class="form-control" placeholder="ชื่อของท่าน (ไม่บังคับ)" style="max-width:320px; margin:0 auto 12px;">
+      <button class="btn" id="pick-file-btn">เลือกไฟล์เพื่ออัพโหลด</button>
+      <div id="upload-preview" style="margin-top:16px;"></div>
+      <div id="upload-alert"></div>
+      <p style="font-size:0.78rem; color:var(--text-soft); margin-bottom:0;">รองรับรูปภาพไม่เกิน 12MB และวีดีโอไม่เกิน 60MB</p>
+    </div>
+
+    <div id="gallery-loading" class="loading">กำลังโหลดรูปภาพ...</div>
+    <div class="gallery-grid" id="gallery-grid"></div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <span class="script-accent">Chutikarn &amp; Mongkon</span>
+  9 ตุลาคม 2569 · ริมธารา พระราม 3 · #kbhappytime
+</footer>
+
+<div class="lightbox" id="lightbox" style="display:none;">
+  <span class="lightbox-close" id="lightbox-close">&times;</span>
+  <div class="lightbox-inner" id="lightbox-inner"></div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script>
+(function () {
+  var grid = document.getElementById('gallery-grid');
+  var loadingEl = document.getElementById('gallery-loading');
+  var fileInput = document.getElementById('file-input');
+  var pickBtn = document.getElementById('pick-file-btn');
+  var previewEl = document.getElementById('upload-preview');
+  var alertEl = document.getElementById('upload-alert');
+
+  function loadGallery() {
+    if (!window.WeddingAPI.isConfigured()) {
+      loadingEl.textContent = 'ระบบยังไม่ได้เชื่อมต่อ API (สำหรับผู้ดูแล: ใส่ API_URL ใน js/config.js)';
+      return;
+    }
+    window.WeddingAPI.get('getGalleryPublic').then(function (res) {
+      loadingEl.style.display = 'none';
+      var items = (res && res.items) || [];
+      grid.innerHTML = '';
+      if (items.length === 0) {
+        grid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--text-soft);">ยังไม่มีรูปภาพ เป็นคนแรกที่แชร์ความทรงจำสิคะ 🌸</p>';
+        return;
+      }
+      items.forEach(function (item) {
+        var div = document.createElement('div');
+        div.className = 'gallery-item';
+        if (item.type === 'video') {
+          div.innerHTML = '<img class="video-thumb" src="' + item.thumbUrl + '" loading="lazy" alt=""><div class="video-badge">▶</div>';
+        } else {
+          div.innerHTML = '<img src="' + item.thumbUrl + '" loading="lazy" alt="' + (item.caption || '') + '">';
+        }
+        div.addEventListener('click', function () { openLightbox(item); });
+        grid.appendChild(div);
+      });
+    }).catch(function () {
+      loadingEl.textContent = 'โหลดรูปภาพไม่สำเร็จ กรุณาลองใหม่อีกครั้ง';
+    });
+  }
+
+  function openLightbox(item) {
+    var lb = document.getElementById('lightbox');
+    var inner = document.getElementById('lightbox-inner');
+    if (item.type === 'video') {
+      inner.innerHTML = '<iframe src="' + item.url + '" allow="autoplay" style="width:100%; height:70vh; border-radius:14px;"></iframe>';
+    } else {
+      inner.innerHTML = '<img src="' + item.url + '" style="border-radius:14px; max-height:80vh; margin:0 auto;">';
+    }
+    if (item.caption) {
+      inner.innerHTML += '<p style="text-align:center; color:white; margin-top:12px;">' + item.caption + '</p>';
+    }
+    lb.style.display = 'flex';
+  }
+  document.getElementById('lightbox-close').addEventListener('click', function () {
+    document.getElementById('lightbox').style.display = 'none';
+    document.getElementById('lightbox-inner').innerHTML = '';
+  });
+  document.getElementById('lightbox').addEventListener('click', function (e) {
+    if (e.target.id === 'lightbox') {
+      document.getElementById('lightbox').style.display = 'none';
+      document.getElementById('lightbox-inner').innerHTML = '';
+    }
+  });
+
+  pickBtn.addEventListener('click', function () { fileInput.click(); });
+
+  fileInput.addEventListener('change', function () {
+    var file = fileInput.files[0];
+    if (!file) return;
+    var isVideo = file.type.indexOf('video') === 0;
+    var maxSize = isVideo ? 60 * 1024 * 1024 : 12 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alertEl.innerHTML = '<div class="alert error">ไฟล์มีขนาดใหญ่เกินไป (สูงสุด ' + (isVideo ? '60MB สำหรับวีดีโอ' : '12MB สำหรับรูปภาพ') + ')</div>';
+      return;
+    }
+    if (!window.WeddingAPI.isConfigured()) {
+      alertEl.innerHTML = '<div class="alert error">ระบบยังไม่ได้เชื่อมต่อ API (สำหรับผู้ดูแล: ใส่ API_URL ใน js/config.js)</div>';
+      return;
+    }
+    previewEl.innerHTML = '<p>กำลังอัพโหลด "' + file.name + '"...</p>';
+    var reader = new FileReader();
+    reader.onload = function () {
+      var base64 = reader.result.split(',')[1];
+      window.WeddingAPI.post('uploadMedia', {
+        filename: file.name,
+        mimeType: file.type,
+        base64Data: base64,
+        type: isVideo ? 'video' : 'image',
+        uploaderName: document.getElementById('uploader-name').value
+      }).then(function (res) {
+        if (res && res.success) {
+          previewEl.innerHTML = '';
+          alertEl.innerHTML = '<div class="alert success">อัพโหลดสำเร็จ! ขอบคุณที่แชร์ความทรงจำนะคะ 🎉</div>';
+          fileInput.value = '';
+          loadGallery();
+        } else {
+          previewEl.innerHTML = '';
+          alertEl.innerHTML = '<div class="alert error">อัพโหลดไม่สำเร็จ: ' + ((res && res.error) || 'unknown') + '</div>';
+        }
+      }).catch(function () {
+        previewEl.innerHTML = '';
+        alertEl.innerHTML = '<div class="alert error">เชื่อมต่อไม่สำเร็จ กรุณาลองใหม่อีกครั้ง</div>';
+      });
+    };
+    reader.readAsDataURL(file);
+  });
+
+  loadGallery();
+})();
+</script>
+</body>
+</html>

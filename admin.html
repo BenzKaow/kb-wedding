@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>หลังบ้าน | เก้า &amp; เบ๊นซ์</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="admin-shell">
+
+<div id="login-view" class="admin-login-box">
+  <div class="card">
+    <h2 style="text-align:center; color:var(--pink-deep); margin-bottom:6px;">เข้าสู่ระบบหลังบ้าน</h2>
+    <p style="text-align:center; color:var(--text-soft); font-size:0.88rem; margin-bottom:22px;">เก้า &amp; เบ๊นซ์ Wedding Admin</p>
+    <div class="form-group">
+      <label for="login-user">Username</label>
+      <input type="text" id="login-user" class="form-control">
+    </div>
+    <div class="form-group">
+      <label for="login-pass">Password</label>
+      <input type="password" id="login-pass" class="form-control">
+    </div>
+    <button class="btn btn-block" id="login-btn">เข้าสู่ระบบ</button>
+    <div id="login-alert"></div>
+  </div>
+</div>
+
+<div id="app-view" style="display:none;">
+  <div class="admin-header">
+    <div class="container">
+      <div class="brand" style="font-size:1.3rem;">หลังบ้าน · เก้า &amp; เบ๊นซ์</div>
+      <button class="btn outline small" id="logout-btn">ออกจากระบบ</button>
+    </div>
+  </div>
+
+  <div class="container" style="padding-top:24px; padding-bottom:60px;">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="overview">ภาพรวม</button>
+      <button class="tab-btn" data-tab="guests">แขก &amp; RSVP</button>
+      <button class="tab-btn" data-tab="expenses">รายรับ-รายจ่าย</button>
+      <button class="tab-btn" data-tab="gallery">รูปภาพ/วีดีโอ</button>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="tab-panel active" id="panel-overview">
+      <div class="stat-grid" id="overview-stats">
+        <div class="loading">กำลังโหลด...</div>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:14px;">สรุปงบประมาณ</h3>
+        <div id="overview-budget"></div>
+      </div>
+    </div>
+
+    <!-- GUESTS -->
+    <div class="tab-panel" id="panel-guests">
+      <div class="stat-grid" id="guest-stats"></div>
+
+      <div class="card" style="margin-bottom:20px;">
+        <h3 style="margin-bottom:14px;">เพิ่มแขกใหม่</h3>
+        <div class="inline-form">
+          <input type="text" id="g-firstname" class="form-control" placeholder="ชื่อ">
+          <input type="text" id="g-lastname" class="form-control" placeholder="นามสกุล">
+          <input type="text" id="g-position" class="form-control" placeholder="ตำแหน่ง/หมายเหตุ">
+          <button class="btn secondary" id="g-add-btn">+ เพิ่มแขก</button>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <input type="text" id="guest-search" class="form-control" placeholder="ค้นหาชื่อแขก...">
+        <select id="guest-filter" class="form-control" style="max-width:180px;">
+          <option value="all">ทั้งหมด</option>
+          <option value="yes">มาร่วมงาน</option>
+          <option value="no">ไม่สะดวก</option>
+          <option value="pending">ยังไม่ตอบ</option>
+        </select>
+        <button class="btn outline small" id="export-csv-btn">⬇ Export CSV</button>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>ชื่อ-นามสกุล</th><th>ตำแหน่ง/หมายเหตุ</th><th>สถานะ</th><th>จำนวน</th><th>เบอร์โทร</th><th>ข้อความ</th><th></th></tr>
+          </thead>
+          <tbody id="guests-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- EXPENSES -->
+    <div class="tab-panel" id="panel-expenses">
+      <div class="stat-grid" id="expense-stats"></div>
+
+      <div class="card" style="margin-bottom:20px;">
+        <h3 style="margin-bottom:14px;">งบประมาณทั้งหมด</h3>
+        <div class="inline-form" style="grid-template-columns: 1fr auto;">
+          <input type="number" id="budget-input" class="form-control" placeholder="ระบุงบประมาณ (บาท)">
+          <button class="btn secondary" id="budget-save-btn">บันทึกงบ</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px;">
+        <h3 style="margin-bottom:14px;">เพิ่มรายการค่าใช้จ่าย</h3>
+        <div class="inline-form">
+          <input type="date" id="e-date" class="form-control">
+          <input type="text" id="e-category" class="form-control" placeholder="หมวดหมู่ (เช่น สถานที่, ชุด, ดอกไม้)">
+          <input type="text" id="e-item" class="form-control" placeholder="รายการ">
+          <input type="number" id="e-amount" class="form-control" placeholder="จำนวนเงิน (บาท)">
+          <input type="text" id="e-note" class="form-control" placeholder="หมายเหตุ">
+          <button class="btn secondary" id="e-add-btn">+ เพิ่มรายการ</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>วันที่</th><th>หมวดหมู่</th><th>รายการ</th><th>จำนวนเงิน</th><th>หมายเหตุ</th><th></th></tr></thead>
+          <tbody id="expenses-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- GALLERY -->
+    <div class="tab-panel" id="panel-gallery">
+      <p style="color:var(--text-soft); margin-bottom:16px;">จัดการรูปภาพและวีดีโอทั้งหมดที่แขกอัพโหลด (กดลบเพื่อนำออกจากเว็บ)</p>
+      <div class="gallery-grid" id="admin-gallery-grid"></div>
+    </div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script>
+(function () {
+  var TOKEN_KEY = 'wedding_admin_token';
+
+  function getToken() { return sessionStorage.getItem(TOKEN_KEY); }
+  function setToken(t) { sessionStorage.setItem(TOKEN_KEY, t); }
+  function clearToken() { sessionStorage.removeItem(TOKEN_KEY); }
+
+  function showApp() {
+    document.getElementById('login-view').style.display = 'none';
+    document.getElementById('app-view').style.display = 'block';
+    loadOverview();
+    loadGuests();
+    loadExpenses();
+    loadGallery();
+  }
+
+  // ---------- Login ----------
+  document.getElementById('login-btn').addEventListener('click', function () {
+    var user = document.getElementById('login-user').value.trim();
+    var pass = document.getElementById('login-pass').value;
+    var alertEl = document.getElementById('login-alert');
+    if (!window.WeddingAPI.isConfigured()) {
+      alertEl.innerHTML = '<div class="alert error">ระบบยังไม่ได้เชื่อมต่อ API (ใส่ API_URL ใน js/config.js ก่อน)</div>';
+      return;
+    }
+    window.WeddingAPI.post('adminLogin', { username: user, password: pass }).then(function (res) {
+      if (res && res.success) {
+        setToken(res.token);
+        showApp();
+      } else {
+        alertEl.innerHTML = '<div class="alert error">Username หรือ Password ไม่ถูกต้อง</div>';
+      }
+    }).catch(function () {
+      alertEl.innerHTML = '<div class="alert error">เชื่อมต่อไม่สำเร็จ กรุณาลองใหม่</div>';
+    });
+  });
+
+  document.getElementById('logout-btn').addEventListener('click', function () {
+    clearToken();
+    location.reload();
+  });
+
+  // ---------- Tabs ----------
+  document.querySelectorAll('.tab-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // ---------- Overview ----------
+  var guestData = [];
+  var expenseData = { expenses: [], total: 0, budget: 0 };
+
+  function loadOverview() {
+    window.WeddingAPI.get('adminGetGuests', { token: getToken() }).then(function (res) {
+      var s = res.stats;
+      document.getElementById('overview-stats').innerHTML =
+        statCard(s.total, 'แขกทั้งหมด') +
+        statCard(s.yes, 'ตอบรับมา') +
+        statCard(s.headcount, 'จำนวนคนที่มาจริง') +
+        statCard(s.no, 'ไม่สะดวก') +
+        statCard(s.pending, 'ยังไม่ตอบ');
+    });
+    window.WeddingAPI.get('adminGetExpenses', { token: getToken() }).then(function (res) {
+      var remain = (Number(res.budget) || 0) - res.total;
+      document.getElementById('overview-budget').innerHTML =
+        '<div class="stat-grid">' +
+        statCard(fmtMoney(res.budget), 'งบประมาณ') +
+        statCard(fmtMoney(res.total), 'ใช้ไปแล้ว') +
+        statCard(fmtMoney(remain), 'คงเหลือ') +
+        '</div>';
+    });
+  }
+
+  function statCard(num, lbl) {
+    return '<div class="stat-card"><div class="num">' + num + '</div><div class="lbl">' + lbl + '</div></div>';
+  }
+  function fmtMoney(n) {
+    return Number(n || 0).toLocaleString('th-TH');
+  }
+
+  // ---------- Guests ----------
+  function loadGuests() {
+    window.WeddingAPI.get('adminGetGuests', { token: getToken() }).then(function (res) {
+      guestData = res.guests || [];
+      var s = res.stats;
+      document.getElementById('guest-stats').innerHTML =
+        statCard(s.total, 'แขกทั้งหมด') +
+        statCard(s.yes, 'ตอบรับมา') +
+        statCard(s.headcount, 'จำนวนคนที่มาจริง') +
+        statCard(s.no, 'ไม่สะดวก') +
+        statCard(s.pending, 'ยังไม่ตอบ');
+      renderGuests();
+    });
+  }
+
+  function renderGuests() {
+    var q = document.getElementById('guest-search').value.trim().toLowerCase();
+    var filter = document.getElementById('guest-filter').value;
+    var tbody = document.getElementById('guests-tbody');
+    tbody.innerHTML = '';
+    var filtered = guestData.filter(function (g) {
+      var full = (g.firstName + ' ' + g.lastName).toLowerCase();
+      if (q && full.indexOf(q) === -1) return false;
+      if (filter === 'all') return true;
+      if (filter === 'pending') return !g.rsvpStatus;
+      return g.rsvpStatus === filter;
+    });
+    filtered.forEach(function (g) {
+      var tr = document.createElement('tr');
+      var statusTag = g.rsvpStatus === 'yes' ? '<span class="status-tag yes">มาร่วมงาน</span>'
+        : g.rsvpStatus === 'no' ? '<span class="status-tag no">ไม่สะดวก</span>'
+        : '<span class="status-tag pending">ยังไม่ตอบ</span>';
+      tr.innerHTML =
+        '<td>' + esc(g.firstName) + ' ' + esc(g.lastName) + '</td>' +
+        '<td>' + esc(g.position || '') + '</td>' +
+        '<td>' + statusTag + '</td>' +
+        '<td>' + (g.numAttending || '-') + '</td>' +
+        '<td>' + esc(g.phone || '') + '</td>' +
+        '<td>' + esc(g.message || '') + '</td>' +
+        '<td><button class="icon-btn del-guest" data-id="' + g.id + '" title="ลบ">🗑️</button></td>';
+      tbody.appendChild(tr);
+    });
+    tbody.querySelectorAll('.del-guest').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        if (!confirm('ลบแขกคนนี้ใช่หรือไม่?')) return;
+        window.WeddingAPI.post('adminDeleteGuest', { token: getToken(), id: btn.dataset.id }).then(function () { loadGuests(); });
+      });
+    });
+  }
+
+  document.getElementById('guest-search').addEventListener('input', renderGuests);
+  document.getElementById('guest-filter').addEventListener('change', renderGuests);
+
+  document.getElementById('g-add-btn').addEventListener('click', function () {
+    var firstName = document.getElementById('g-firstname').value.trim();
+    if (!firstName) return;
+    window.WeddingAPI.post('adminAddGuest', {
+      token: getToken(),
+      firstName: firstName,
+      lastName: document.getElementById('g-lastname').value.trim(),
+      position: document.getElementById('g-position').value.trim()
+    }).then(function () {
+      document.getElementById('g-firstname').value = '';
+      document.getElementById('g-lastname').value = '';
+      document.getElementById('g-position').value = '';
+      loadGuests();
+    });
+  });
+
+  document.getElementById('export-csv-btn').addEventListener('click', function () {
+    var rows = [['ชื่อ', 'นามสกุล', 'ตำแหน่ง', 'สถานะ', 'จำนวน', 'เบอร์โทร', 'ข้อความ']];
+    guestData.forEach(function (g) {
+      rows.push([g.firstName, g.lastName, g.position || '', g.rsvpStatus || 'pending', g.numAttending || '', g.phone || '', g.message || '']);
+    });
+    var csv = rows.map(function (r) {
+      return r.map(function (cell) { return '"' + String(cell).replace(/"/g, '""') + '"'; }).join(',');
+    }).join('\n');
+    var blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'guest-list.csv';
+    a.click();
+  });
+
+  // ---------- Expenses ----------
+  function loadExpenses() {
+    window.WeddingAPI.get('adminGetExpenses', { token: getToken() }).then(function (res) {
+      expenseData = res;
+      document.getElementById('budget-input').value = res.budget || '';
+      var remain = (Number(res.budget) || 0) - res.total;
+      document.getElementById('expense-stats').innerHTML =
+        statCard(fmtMoney(res.budget), 'งบประมาณ') +
+        statCard(fmtMoney(res.total), 'ใช้ไปแล้ว') +
+        statCard(fmtMoney(remain), 'คงเหลือ') +
+        statCard(res.expenses.length, 'จำนวนรายการ');
+      renderExpenses();
+    });
+  }
+
+  function renderExpenses() {
+    var tbody = document.getElementById('expenses-tbody');
+    tbody.innerHTML = '';
+    expenseData.expenses.forEach(function (ex) {
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>' + esc(ex.date || '') + '</td>' +
+        '<td>' + esc(ex.category || '') + '</td>' +
+        '<td>' + esc(ex.item || '') + '</td>' +
+        '<td>' + fmtMoney(ex.amount) + ' ฿</td>' +
+        '<td>' + esc(ex.note || '') + '</td>' +
+        '<td><button class="icon-btn del-expense" data-id="' + ex.id + '" title="ลบ">🗑️</button></td>';
+      tbody.appendChild(tr);
+    });
+    tbody.querySelectorAll('.del-expense').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        if (!confirm('ลบรายการนี้ใช่หรือไม่?')) return;
+        window.WeddingAPI.post('adminDeleteExpense', { token: getToken(), id: btn.dataset.id }).then(function () { loadExpenses(); loadOverview(); });
+      });
+    });
+  }
+
+  document.getElementById('e-add-btn').addEventListener('click', function () {
+    var item = document.getElementById('e-item').value.trim();
+    var amount = document.getElementById('e-amount').value;
+    if (!item || !amount) return;
+    window.WeddingAPI.post('adminAddExpense', {
+      token: getToken(),
+      date: document.getElementById('e-date').value,
+      category: document.getElementById('e-category').value.trim(),
+      item: item,
+      amount: amount,
+      note: document.getElementById('e-note').value.trim()
+    }).then(function () {
+      document.getElementById('e-item').value = '';
+      document.getElementById('e-amount').value = '';
+      document.getElementById('e-note').value = '';
+      loadExpenses();
+      loadOverview();
+    });
+  });
+
+  document.getElementById('budget-save-btn').addEventListener('click', function () {
+    window.WeddingAPI.post('adminSetBudget', { token: getToken(), budget: document.getElementById('budget-input').value }).then(function () {
+      loadExpenses();
+      loadOverview();
+    });
+  });
+
+  // ---------- Gallery ----------
+  function loadGallery() {
+    window.WeddingAPI.get('adminGetGallery', { token: getToken() }).then(function (res) {
+      var grid = document.getElementById('admin-gallery-grid');
+      grid.innerHTML = '';
+      (res.items || []).forEach(function (item) {
+        var div = document.createElement('div');
+        div.className = 'gallery-item';
+        div.innerHTML =
+          '<img src="' + item.thumbUrl + '" loading="lazy" alt="">' +
+          (item.type === 'video' ? '<div class="video-badge">▶</div>' : '') +
+          '<button class="icon-btn del-media" data-id="' + item.id + '" style="position:absolute; bottom:6px; right:6px; background:rgba(255,255,255,0.9); border-radius:50%;">🗑️</button>';
+        grid.appendChild(div);
+      });
+      grid.querySelectorAll('.del-media').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          if (!confirm('ลบไฟล์นี้ใช่หรือไม่?')) return;
+          window.WeddingAPI.post('adminDeleteMedia', { token: getToken(), id: btn.dataset.id }).then(function () { loadGallery(); });
+        });
+      });
+    });
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  // ---------- Auto-login if session exists ----------
+  if (getToken()) {
+    showApp();
+  }
+})();
+</script>
+</body>
+</html>
