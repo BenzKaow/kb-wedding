@@ -37,7 +37,7 @@
     <div class="tabs">
       <button class="tab-btn active" data-tab="overview">ภาพรวม</button>
       <button class="tab-btn" data-tab="guests">แขก &amp; RSVP</button>
-      <button class="tab-btn" data-tab="expenses">รายรับ-รายจ่าย</button>
+      <button class="tab-btn" data-tab="expenses">ค่าใช้จ่าย</button>
       <button class="tab-btn" data-tab="gallery">รูปภาพ/วีดีโอ</button>
     </div>
 
@@ -102,18 +102,17 @@
       <div class="card" style="margin-bottom:20px;">
         <h3 style="margin-bottom:14px;">เพิ่มรายการค่าใช้จ่าย</h3>
         <div class="inline-form">
-          <input type="date" id="e-date" class="form-control">
-          <input type="text" id="e-category" class="form-control" placeholder="หมวดหมู่ (เช่น สถานที่, ชุด, ดอกไม้)">
           <input type="text" id="e-item" class="form-control" placeholder="รายการ">
           <input type="number" id="e-amount" class="form-control" placeholder="จำนวนเงิน (บาท)">
-          <input type="text" id="e-note" class="form-control" placeholder="หมายเหตุ">
+          <input type="number" id="e-paid" class="form-control" placeholder="จ่ายไปแล้ว (บาท)">
+          <input type="date" id="e-duedate" class="form-control" title="กำหนดชำระครบ">
           <button class="btn secondary" id="e-add-btn">+ เพิ่มรายการ</button>
         </div>
       </div>
 
       <div class="table-wrap">
         <table class="data-table">
-          <thead><tr><th>วันที่</th><th>หมวดหมู่</th><th>รายการ</th><th>จำนวนเงิน</th><th>หมายเหตุ</th><th></th></tr></thead>
+          <thead><tr><th>รายการ</th><th>จำนวนเงิน</th><th>จ่ายไปแล้ว</th><th>คงเหลือต้องจ่าย</th><th>กำหนดชำระครบ</th><th></th></tr></thead>
           <tbody id="expenses-tbody"></tbody>
         </table>
       </div>
@@ -184,7 +183,7 @@
 
   // ---------- Overview ----------
   var guestData = [];
-  var expenseData = { expenses: [], total: 0, budget: 0 };
+  var expenseData = { expenses: [], totalAmount: 0, totalPaid: 0, totalRemaining: 0, budget: 0 };
 
   function loadOverview() {
     window.WeddingAPI.get('adminGetGuests', { token: getToken() }).then(function (res) {
@@ -197,12 +196,14 @@
         statCard(s.pending, 'ยังไม่ตอบ');
     });
     window.WeddingAPI.get('adminGetExpenses', { token: getToken() }).then(function (res) {
-      var remain = (Number(res.budget) || 0) - res.total;
+      var budgetRemain = (Number(res.budget) || 0) - res.totalAmount;
       document.getElementById('overview-budget').innerHTML =
         '<div class="stat-grid">' +
         statCard(fmtMoney(res.budget), 'งบประมาณ') +
-        statCard(fmtMoney(res.total), 'ใช้ไปแล้ว') +
-        statCard(fmtMoney(remain), 'คงเหลือ') +
+        statCard(fmtMoney(res.totalAmount), 'ยอดรวมค่าใช้จ่ายทั้งหมด') +
+        statCard(fmtMoney(res.totalPaid), 'จ่ายไปแล้ว') +
+        statCard(fmtMoney(res.totalRemaining), 'คงเหลือต้องจ่าย') +
+        statCard(fmtMoney(budgetRemain), 'คงเหลือในงบประมาณ') +
         '</div>';
     });
   }
@@ -303,27 +304,40 @@
     window.WeddingAPI.get('adminGetExpenses', { token: getToken() }).then(function (res) {
       expenseData = res;
       document.getElementById('budget-input').value = res.budget || '';
-      var remain = (Number(res.budget) || 0) - res.total;
       document.getElementById('expense-stats').innerHTML =
-        statCard(fmtMoney(res.budget), 'งบประมาณ') +
-        statCard(fmtMoney(res.total), 'ใช้ไปแล้ว') +
-        statCard(fmtMoney(remain), 'คงเหลือ') +
+        statCard(fmtMoney(res.totalAmount), 'ยอดรวมค่าใช้จ่าย') +
+        statCard(fmtMoney(res.totalPaid), 'จ่ายไปแล้ว') +
+        statCard(fmtMoney(res.totalRemaining), 'คงเหลือต้องจ่าย') +
         statCard(res.expenses.length, 'จำนวนรายการ');
       renderExpenses();
     });
   }
 
+  function fmtDate(d) {
+    if (!d) return '';
+    var dt = new Date(d);
+    if (isNaN(dt.getTime())) return String(d);
+    return dt.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
   function renderExpenses() {
     var tbody = document.getElementById('expenses-tbody');
     tbody.innerHTML = '';
+    var today = new Date(); today.setHours(0, 0, 0, 0);
     expenseData.expenses.forEach(function (ex) {
+      var remaining = Number(ex.remaining) || 0;
+      var dueDate = ex.dueDate ? new Date(ex.dueDate) : null;
+      var overdue = remaining > 0 && dueDate && !isNaN(dueDate.getTime()) && dueDate < today;
+      var statusTag = remaining <= 0
+        ? '<span class="status-tag yes">จ่ายครบแล้ว</span>'
+        : '<span class="status-tag ' + (overdue ? 'no' : 'pending') + '">' + fmtMoney(remaining) + ' ฿' + (overdue ? ' (เลยกำหนด)' : '') + '</span>';
       var tr = document.createElement('tr');
       tr.innerHTML =
-        '<td>' + esc(ex.date || '') + '</td>' +
-        '<td>' + esc(ex.category || '') + '</td>' +
         '<td>' + esc(ex.item || '') + '</td>' +
         '<td>' + fmtMoney(ex.amount) + ' ฿</td>' +
-        '<td>' + esc(ex.note || '') + '</td>' +
+        '<td>' + fmtMoney(ex.paid) + ' ฿</td>' +
+        '<td>' + statusTag + '</td>' +
+        '<td>' + esc(fmtDate(ex.dueDate)) + '</td>' +
         '<td><button class="icon-btn del-expense" data-id="' + ex.id + '" title="ลบ">🗑️</button></td>';
       tbody.appendChild(tr);
     });
@@ -341,15 +355,15 @@
     if (!item || !amount) return;
     window.WeddingAPI.post('adminAddExpense', {
       token: getToken(),
-      date: document.getElementById('e-date').value,
-      category: document.getElementById('e-category').value.trim(),
       item: item,
       amount: amount,
-      note: document.getElementById('e-note').value.trim()
+      paid: document.getElementById('e-paid').value || 0,
+      dueDate: document.getElementById('e-duedate').value
     }).then(function () {
       document.getElementById('e-item').value = '';
       document.getElementById('e-amount').value = '';
-      document.getElementById('e-note').value = '';
+      document.getElementById('e-paid').value = '';
+      document.getElementById('e-duedate').value = '';
       loadExpenses();
       loadOverview();
     });
