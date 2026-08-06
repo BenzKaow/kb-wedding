@@ -57,7 +57,7 @@ window.WEDDING_CONFIG = {
   rsvpNote: 'ขออภัยหากมิได้เรียนเชิญด้วยตัวเอง',
 
   promptpay: {
-    phone: '0826979767',
+    phone: '0826979167',
     accountName: 'มงคล นิลวงษ์',
     message: 'ร่วมยินดีกับ เก้า & เบ๊นซ์'
   },
