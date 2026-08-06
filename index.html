@@ -159,28 +159,10 @@
   </div>
 </section>
 
-<!-- PHOTO / VIDEO GALLERY -->
-<section class="section" id="photos">
-  <div class="container">
-    <h2 class="section-title">ภาพความทรงจำ</h2>
-    <p class="section-sub">รูปภาพและวีดีโอจากเก้า &amp; เบ๊นซ์ และแขกทุกท่าน 💕</p>
-    <div id="home-gallery-loading" class="loading" style="display:none;">กำลังโหลดรูปภาพ...</div>
-    <div class="gallery-grid" id="home-gallery-grid"></div>
-    <div style="text-align:center; margin-top:24px;">
-      <a class="map-btn" href="gallery.html">ดูรูปทั้งหมด / เพิ่มรูปของท่าน →</a>
-    </div>
-  </div>
-</section>
-
 <footer class="site-footer">
   <span class="script-accent">Chutikarn &amp; Mongkon</span>
   9 ตุลาคม 2569 · ริมธารา พระราม 3 · #kbhappytime
 </footer>
-
-<div class="lightbox" id="home-lightbox" style="display:none;">
-  <span class="lightbox-close" id="home-lightbox-close">&times;</span>
-  <div class="lightbox-inner" id="home-lightbox-inner"></div>
-</div>
 
 <script src="js/config.js"></script>
 <script src="js/promptpay.js"></script>
@@ -327,61 +309,6 @@
       alertEl.innerHTML = '<div class="alert error">เชื่อมต่อไม่สำเร็จ กรุณาลองใหม่อีกครั้งค่ะ</div>';
     });
   });
-
-  // ---------- Photo/video gallery preview ----------
-  var HOME_GALLERY_LIMIT = 8;
-  var homeGrid = document.getElementById('home-gallery-grid');
-  var homeLoading = document.getElementById('home-gallery-loading');
-
-  function loadHomeGallery() {
-    if (!window.WeddingAPI.isConfigured()) return;
-    homeLoading.style.display = 'block';
-    window.WeddingAPI.get('getGalleryPublic').then(function (res) {
-      homeLoading.style.display = 'none';
-      var items = ((res && res.items) || []).slice(0, HOME_GALLERY_LIMIT);
-      homeGrid.innerHTML = '';
-      if (items.length === 0) {
-        homeGrid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--text-soft);">ยังไม่มีรูปภาพ เป็นคนแรกที่แชร์ความทรงจำสิคะ 🌸</p>';
-        return;
-      }
-      items.forEach(function (item) {
-        var div = document.createElement('div');
-        div.className = 'gallery-item';
-        if (item.type === 'video') {
-          div.innerHTML = '<img class="video-thumb" src="' + item.thumbUrl + '" loading="lazy" alt=""><div class="video-badge">▶</div>';
-        } else {
-          div.innerHTML = '<img src="' + item.thumbUrl + '" loading="lazy" alt="">';
-        }
-        div.addEventListener('click', function () { openHomeLightbox(item); });
-        homeGrid.appendChild(div);
-      });
-    }).catch(function () {
-      homeLoading.style.display = 'none';
-    });
-  }
-
-  function openHomeLightbox(item) {
-    var lb = document.getElementById('home-lightbox');
-    var inner = document.getElementById('home-lightbox-inner');
-    if (item.type === 'video') {
-      inner.innerHTML = '<iframe src="' + item.url + '" allow="autoplay" style="width:100%; height:70vh; border-radius:14px;"></iframe>';
-    } else {
-      inner.innerHTML = '<img src="' + item.url + '" style="border-radius:14px; max-height:80vh; margin:0 auto;">';
-    }
-    lb.style.display = 'flex';
-  }
-  document.getElementById('home-lightbox-close').addEventListener('click', function () {
-    document.getElementById('home-lightbox').style.display = 'none';
-    document.getElementById('home-lightbox-inner').innerHTML = '';
-  });
-  document.getElementById('home-lightbox').addEventListener('click', function (e) {
-    if (e.target.id === 'home-lightbox') {
-      document.getElementById('home-lightbox').style.display = 'none';
-      document.getElementById('home-lightbox-inner').innerHTML = '';
-    }
-  });
-
-  loadHomeGallery();
 })();
 </script>
 </body>
