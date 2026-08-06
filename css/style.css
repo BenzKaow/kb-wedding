@@ -406,6 +406,17 @@ img, video, iframe { max-width: 100%; display: block; }
   color: white; font-size: 2rem; cursor: pointer;
 }
 
+/* ---------- Pre-wedding video ---------- */
+.pw-video {
+  max-width: 640px;
+  margin: 0 auto 26px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  background: #000;
+}
+.pw-video video { width: 100%; display: block; }
+
 /* ---------- Footer ---------- */
 .site-footer {
   text-align: center;

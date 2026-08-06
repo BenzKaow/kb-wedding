@@ -63,5 +63,33 @@ window.WEDDING_CONFIG = {
   },
 
   heroImage: 'assets/invitation-front.jpg',
-  cardBackImage: 'assets/invitation-back.jpg'
+  cardBackImage: 'assets/invitation-back.jpg',
+
+  // ===================================================================
+  // รูปพรีเวดดิ้ง / วีดีโอเปิดงาน / รูปบรรยากาศร้าน
+  // วิธีเพิ่ม-ลบรูปหรือวีดีโอเอง (ไม่ต้องรบกวนพริกแกง):
+  //   1. เอาไฟล์รูป/วีดีโอไปวางในโฟลเดอร์ assets/gallery/prewedding/ หรือ assets/gallery/venue/
+  //   2. ก็อปปี้บรรทัด { src: '...' } ด้านล่าง แล้วแก้ path ให้ตรงกับชื่อไฟล์ที่วางไว้
+  //   3. จะลบรูปไหนออกจากเว็บ ก็ลบบรรทัดนั้นออก (หรือใส่ // ข้างหน้าเพื่อซ่อนไว้ก่อน)
+  //   4. ถ้าไม่มีรูป/วีดีโอเลย ปล่อย array ว่าง [] ไว้ ระบบจะซ่อน section นั้นให้อัตโนมัติ
+  // ===================================================================
+  gallery: {
+    // วีดีโอเปิดงาน/คลิปสั้น (ไฟล์ .mp4) — ถ้ายังไม่มีให้เว้นว่างไว้แบบนี้: ''
+    video: '',
+
+    // รูปพรีเวดดิ้ง / คู่บ่าวสาว (แสดงเป็น section ใหม่ต่อจากหน้าปก)
+    prewedding: [
+      { src: 'assets/gallery/prewedding/prewedding-1.jpg', caption: '' },
+      { src: 'assets/gallery/prewedding/prewedding-2.jpg', caption: '' },
+      { src: 'assets/gallery/prewedding/prewedding-3.jpg', caption: '' },
+      { src: 'assets/gallery/prewedding/prewedding-4.jpg', caption: '' },
+      // { src: 'assets/gallery/prewedding/photo5.jpg', caption: '' },
+    ],
+
+    // รูปบรรยากาศร้าน/สถานที่ริมธารา (แสดงในหน้าแผนที่)
+    venue: [
+      // { src: 'assets/gallery/venue/venue1.jpg', caption: '' },
+      // { src: 'assets/gallery/venue/venue2.jpg', caption: '' },
+    ]
+  }
 };

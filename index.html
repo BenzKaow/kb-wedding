@@ -42,6 +42,18 @@
   </div>
 </header>
 
+<!-- PRE-WEDDING / OPENING VIDEO -->
+<section class="section" id="prewedding-section" style="display:none;">
+  <div class="container">
+    <h2 class="section-title">ก่อนจะมาถึงวันนี้</h2>
+    <p class="section-sub">เรื่องราวความรักของเราผ่านภาพและวีดีโอ</p>
+    <div class="pw-video" id="pw-video-wrap" style="display:none;">
+      <video id="pw-video" controls playsinline></video>
+    </div>
+    <div class="gallery-grid" id="pw-grid"></div>
+  </div>
+</section>
+
 <!-- PARENTS -->
 <section class="section">
   <div class="container">
@@ -135,6 +147,7 @@
   <div class="container">
     <h2 class="section-title">สถานที่จัดงาน</h2>
     <p class="section-sub">ริมธารา Rimtara พระราม 3 (ห้อง ริมนที) อาคาร Sv City</p>
+    <div class="gallery-grid" id="venue-grid" style="display:none; margin-bottom:20px;"></div>
     <div class="map-frame">
       <iframe
         src="https://maps.google.com/maps?q=13.6719926,100.5442374&hl=th&z=16&ie=UTF8&iwloc=&output=embed"
@@ -164,6 +177,11 @@
   9 ตุลาคม 2569 · ริมธารา พระราม 3 · #kbhappytime
 </footer>
 
+<div class="lightbox" id="home-lightbox" style="display:none;">
+  <span class="lightbox-close" id="home-lightbox-close">&times;</span>
+  <div class="lightbox-inner" id="home-lightbox-inner"></div>
+</div>
+
 <script src="js/config.js"></script>
 <script src="js/promptpay.js"></script>
 <script src="js/api.js"></script>
@@ -188,6 +206,54 @@
     div.innerHTML = '<div class="dot" style="background:' + c.hex + '"></div>' + c.name;
     themeEl.appendChild(div);
   });
+
+  // ---------- Pre-wedding photos / opening video / venue photos ----------
+  var homeLightbox = document.getElementById('home-lightbox');
+  var homeLightboxInner = document.getElementById('home-lightbox-inner');
+
+  function openHomeLightbox(src) {
+    homeLightboxInner.innerHTML = '<img src="' + src + '" style="border-radius:14px; max-height:80vh; margin:0 auto;">';
+    homeLightbox.style.display = 'flex';
+  }
+  function closeHomeLightbox() {
+    homeLightbox.style.display = 'none';
+    homeLightboxInner.innerHTML = '';
+  }
+  document.getElementById('home-lightbox-close').addEventListener('click', closeHomeLightbox);
+  homeLightbox.addEventListener('click', function (e) {
+    if (e.target.id === 'home-lightbox') closeHomeLightbox();
+  });
+
+  function renderPhotoGrid(grid, photos) {
+    photos.forEach(function (p) {
+      var div = document.createElement('div');
+      div.className = 'gallery-item';
+      div.innerHTML = '<img src="' + p.src + '" loading="lazy" alt="' + (p.caption || '') + '">';
+      div.addEventListener('click', function () { openHomeLightbox(p.src); });
+      grid.appendChild(div);
+    });
+  }
+
+  if (cfg.gallery) {
+    var pwPhotos = cfg.gallery.prewedding || [];
+    var venuePhotos = cfg.gallery.venue || [];
+    var videoSrc = cfg.gallery.video || '';
+
+    if (videoSrc || pwPhotos.length > 0) {
+      document.getElementById('prewedding-section').style.display = 'block';
+    }
+    if (videoSrc) {
+      document.getElementById('pw-video').src = videoSrc;
+      document.getElementById('pw-video-wrap').style.display = 'block';
+    }
+    renderPhotoGrid(document.getElementById('pw-grid'), pwPhotos);
+
+    if (venuePhotos.length > 0) {
+      var venueGrid = document.getElementById('venue-grid');
+      venueGrid.style.display = 'grid';
+      renderPhotoGrid(venueGrid, venuePhotos);
+    }
+  }
 
   // ---------- Countdown ----------
   var target = new Date(cfg.weddingDateISO).getTime();
