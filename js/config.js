@@ -3,7 +3,7 @@
  */
 window.WEDDING_CONFIG = {
   // ⚠️ สำคัญที่สุด: หลัง deploy Google Apps Script แล้ว เอา Web app URL มาใส่ตรงนี้
-  API_URL: 'PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE',
+  API_URL: 'https://script.google.com/macros/s/AKfycbx-d78BZFR5cShNfcnkbVdsASdhXqds1NoDRfv6ol4Yx0dx7f59GWepQCAc0tTi2pz7ig/exec',
 
   bride: {
     thName: 'ชุติกาญจน์ ณ สงขลา',
