@@ -78,9 +78,9 @@ window.WEDDING_CONFIG = {
     video: 'assets/gallery/video/opening-video.mp4',
 
     // รูปพรีเวดดิ้ง / คู่บ่าวสาว (แสดงเป็น section ใหม่ต่อจากหน้าปก)
-    //prewedding: [
-     // { src: 'assets/gallery/prewedding/prewedding-1.jpg', caption: '' },
-      //{ src: 'assets/gallery/prewedding/prewedding-2.jpg', caption: '' },
+    prewedding: [
+     //{ src: 'assets/gallery/prewedding/prewedding-1.jpg', caption: '' },
+     //{ src: 'assets/gallery/prewedding/prewedding-2.jpg', caption: '' },
       //{ src: 'assets/gallery/prewedding/prewedding-3.jpg', caption: '' },
       //{ src: 'assets/gallery/prewedding/prewedding-4.jpg', caption: '' },
       // { src: 'assets/gallery/prewedding/photo5.jpg', caption: '' },
