@@ -43,7 +43,7 @@
 </header>
 
 <!-- PRE-WEDDING / OPENING VIDEO -->
-<section class="section" id="prewedding-section" style="display:none; padding-bottom:0;">
+<section class="section" id="prewedding-section" style="display:none;">
   <div class="container">
     <h2 class="section-title">ก่อนจะมาถึงวันนี้</h2>
     <p class="section-sub">เรื่องราวความรักของเราผ่านภาพและวีดีโอ<span id="pw-count" class="pw-count-tag"></span></p>
@@ -52,14 +52,16 @@
       <button class="pw-play-btn" id="pw-play-btn" aria-label="เล่นวีดีโอ">&#9658;</button>
       <video id="pw-video" playsinline></video>
     </div>
-    <p class="pw-scroll-hint" id="pw-scroll-hint" style="display:none;">เลื่อนลงเพื่อชมเรื่องราวของเรา ↓</p>
-  </div>
 
-  <!-- full-screen scrolling story: one photo per viewport, gentle parallax drift -->
-  <div class="pw-story" id="pw-story"></div>
+    <!-- single large auto-rotating slideshow -->
+    <div class="pw-hero-slideshow" id="pw-hero-slideshow" style="display:none;">
+      <div class="pw-hero-stage" id="pw-hero-stage"></div>
+      <button class="pw-hero-nav pw-hero-prev" id="pw-hero-prev" aria-label="ก่อนหน้า">&#8249;</button>
+      <button class="pw-hero-nav pw-hero-next" id="pw-hero-next" aria-label="ถัดไป">&#8250;</button>
+      <div class="pw-hero-counter" id="pw-hero-counter"></div>
+    </div>
 
-  <div class="container">
-    <div id="pw-more-wrap" style="display:none; text-align:center; margin:34px 0;">
+    <div id="pw-more-wrap" style="display:none; text-align:center; margin-top:26px;">
       <a class="btn outline" href="gallery.html">ดูรูปเพิ่มเติม &amp; ร่วมแชร์ความทรงจำ →</a>
     </div>
   </div>
@@ -298,61 +300,45 @@
     });
   }
 
-  // ---------- full-screen scrolling story with parallax drift ----------
-  function buildStory(photos) {
-    var wrap = document.getElementById('pw-story');
-    wrap.innerHTML = '';
+  // ---------- single large auto-rotating slideshow (minimal, no album below) ----------
+  function buildHeroSlideshow(photos) {
     if (!photos.length) return;
-    var slides = [];
+    var stage = document.getElementById('pw-hero-stage');
+    var counterEl = document.getElementById('pw-hero-counter');
+    var wrap = document.getElementById('pw-hero-slideshow');
+    var idx = 0;
+    stage.innerHTML = '';
 
-    photos.forEach(function (p, idx) {
-      var slide = document.createElement('div');
-      slide.className = 'pw-slide';
-      var cap = p.caption ? '<div class="pw-slide-caption">' + escHtmlHome(p.caption) + '</div>' : '';
-      slide.innerHTML =
-        '<div class="pw-slide-media"><img src="' + p.src + '" loading="lazy" alt="' + escHtmlHome(p.caption || '') + '"></div>' +
-        '<div class="pw-slide-overlay"><span class="pw-slide-counter">' + (idx + 1) + ' / ' + photos.length + '</span>' + cap + '</div>';
-      slide.addEventListener('click', function () { openHomeLightbox(photos, idx); });
-      wrap.appendChild(slide);
-      slides.push(slide);
+    photos.forEach(function (p, i) {
+      var img = document.createElement('img');
+      img.src = p.src;
+      img.loading = 'lazy';
+      img.alt = p.caption || '';
+      if (i === 0) img.classList.add('active');
+      stage.appendChild(img);
     });
+    stage.addEventListener('click', function () { openHomeLightbox(photos, idx); });
 
-    // fade the caption/counter in once a slide is mostly in view
-    var revealObserver = ('IntersectionObserver' in window) ? new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) { entry.target.classList.toggle('pw-in-view', entry.isIntersecting); });
-    }, { threshold: 0.35 }) : null;
-
-    // only slides near the viewport get their parallax transform updated (cheap even with many photos)
-    var activeSlides = [];
-    var trackObserver = ('IntersectionObserver' in window) ? new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        var i = activeSlides.indexOf(entry.target);
-        if (entry.isIntersecting) { if (i === -1) activeSlides.push(entry.target); }
-        else if (i !== -1) { activeSlides.splice(i, 1); }
-      });
-    }, { rootMargin: '100% 0px 100% 0px' }) : null;
-
-    slides.forEach(function (s) {
-      if (revealObserver) { revealObserver.observe(s); } else { s.classList.add('pw-in-view'); }
-      if (trackObserver) { trackObserver.observe(s); } else { activeSlides.push(s); }
-    });
-
-    var ticking = false;
-    function updateParallax() {
-      ticking = false;
-      var vh = window.innerHeight;
-      activeSlides.forEach(function (s) {
-        var rect = s.getBoundingClientRect();
-        var center = rect.top + rect.height / 2;
-        var progress = (vh / 2 - center) / vh; // roughly -0.5..0.5 while the slide is on screen
-        var media = s.querySelector('.pw-slide-media');
-        if (media) media.style.transform = 'translateY(' + (progress * 70).toFixed(1) + 'px)';
-      });
+    function render() {
+      Array.prototype.forEach.call(stage.querySelectorAll('img'), function (im, k) { im.classList.toggle('active', k === idx); });
+      counterEl.textContent = (idx + 1) + ' / ' + photos.length;
     }
-    window.addEventListener('scroll', function () {
-      if (!ticking) { ticking = true; requestAnimationFrame(updateParallax); }
-    }, { passive: true });
-    updateParallax();
+    function goPrev() { idx = (idx - 1 + photos.length) % photos.length; render(); }
+    function goNext() { idx = (idx + 1) % photos.length; render(); }
+    document.getElementById('pw-hero-prev').addEventListener('click', function (e) { e.stopPropagation(); goPrev(); });
+    document.getElementById('pw-hero-next').addEventListener('click', function (e) { e.stopPropagation(); goNext(); });
+
+    var timer = null;
+    function startAuto() { timer = setInterval(goNext, 4000); }
+    function stopAuto() { clearInterval(timer); }
+    if (photos.length > 1) {
+      startAuto();
+      wrap.addEventListener('mouseenter', stopAuto);
+      wrap.addEventListener('mouseleave', startAuto);
+    }
+
+    render();
+    wrap.style.display = 'block';
   }
 
   // ---------- video: custom play button overlay ----------
@@ -381,8 +367,7 @@
     if (pwPhotos.length > 0) {
       document.getElementById('pw-count').textContent = '📸 ' + pwPhotos.length + ' ภาพ';
       document.getElementById('pw-more-wrap').style.display = 'block';
-      document.getElementById('pw-scroll-hint').style.display = 'block';
-      buildStory(pwPhotos);
+      buildHeroSlideshow(pwPhotos);
     }
 
     if (venuePhotos.length > 0) {
