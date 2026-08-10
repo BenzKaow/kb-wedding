@@ -224,7 +224,7 @@
         statCard(s.total, 'แขกทั้งหมด') +
         statCard(s.yes, 'ตอบรับมา') +
         statCard(s.headcount, 'จำนวนคนที่มาจริง') +
-        statCard(s.no, 'ไม่สะดวก') +
+        statCard(s.no, 'ไม่ได้มาร่วมงาน') +
         statCard(s.pending, 'ยังไม่ตอบ');
       renderGuests();
     });
@@ -245,7 +245,7 @@
     filtered.forEach(function (g) {
       var tr = document.createElement('tr');
       var statusTag = g.rsvpStatus === 'yes' ? '<span class="status-tag yes">มาร่วมงาน</span>'
-        : g.rsvpStatus === 'no' ? '<span class="status-tag no">ไม่สะดวก</span>'
+        : g.rsvpStatus === 'no' ? '<span class="status-tag no">ไม่ได้มาร่วมงาน</span>'
         : '<span class="status-tag pending">ยังไม่ตอบ</span>';
       tr.innerHTML =
         '<td>' + esc(g.firstName) + ' ' + esc(g.lastName) + '</td>' +
