@@ -112,7 +112,7 @@
               <input type="radio" name="attending" value="yes"> 💚 มาร่วมงาน
             </label>
             <label class="radio-pill no" id="pill-no">
-              <input type="radio" name="attending" value="no"> 💙 ไม่ได้มาร่วมงาน
+              <input type="radio" name="attending" value="no"> 💔 ไม่สะดวก
             </label>
           </div>
         </div>
@@ -163,11 +163,8 @@
 <section class="section" id="gift" style="background:var(--cream-deep)">
   <div class="container">
     <h2 class="section-title">ร่วมยินดีกับบ่าวสาว</h2>
-    <p class="section-sub">สำหรับท่านที่ไม่สะดวกมาร่วมงาน แต่อยากร่วมอวยพรเป็นสินน้ำใจ สามารถสแกน QR ด้านล่างนี้ได้ค่ะ</p>
-    <div class="qr-box">
-      <div id="promptpay-qr"></div>
-      <div class="name">มงคล นิลวงษ์</div>
-      <div class="msg">ร่วมยินดีกับ เก้า &amp; เบ๊นซ์</div>
+    <div class="gift-card">
+      <img src="assets/gift-card.jpg" alt="ขอบคุณที่มาร่วมงาน และ QR สำหรับร่วมอวยพร" class="gift-card-img">
     </div>
   </div>
 </section>
@@ -272,13 +269,6 @@
   }
   tick();
   setInterval(tick, 1000);
-
-  // ---------- PromptPay QR ----------
-  var payload = window.PromptPay.generatePayload(cfg.promptpay.phone);
-  var qr = window.qrcode(0, 'M');
-  qr.addData(payload);
-  qr.make();
-  document.getElementById('promptpay-qr').innerHTML = qr.createSvgTag({ cellSize: 5, margin: 4 });
 
   // ---------- RSVP form ----------
   var pillYes = document.getElementById('pill-yes');
