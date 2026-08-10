@@ -42,6 +42,7 @@ window.WEDDING_CONFIG = {
     { name: 'ชมพูอ่อน', hex: '#F8DCE2' },
     { name: 'มินท์', hex: '#BFE3D4' },
     { name: 'เขียวอ่อน', hex: '#D7EAC8' },
+    { name: 'เหลือง', hex: '#F5E6A8' },
     { name: 'ครีม', hex: '#F3E7C9' },
     { name: 'ฟ้า', hex: '#BFD9EC' },
     { name: 'ม่วง', hex: '#D6C6E8' },
