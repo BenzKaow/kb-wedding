@@ -46,11 +46,15 @@
 <section class="section" id="prewedding-section" style="display:none;">
   <div class="container">
     <h2 class="section-title">ก่อนจะมาถึงวันนี้</h2>
-    <p class="section-sub">เรื่องราวความรักของเราผ่านภาพและวีดีโอ</p>
+    <p class="section-sub">เรื่องราวความรักของเราผ่านภาพและวีดีโอ<span id="pw-count" class="pw-count-tag"></span></p>
     <div class="pw-video" id="pw-video-wrap" style="display:none;">
+      <div class="pw-video-label">🎬 คลิปเปิดงาน</div>
       <video id="pw-video" controls playsinline></video>
     </div>
-    <div class="gallery-grid" id="pw-grid"></div>
+    <div class="masonry-grid" id="pw-grid"></div>
+    <div id="pw-more-wrap" style="display:none; text-align:center; margin-top:26px;">
+      <a class="btn outline" href="gallery.html">ดูรูปเพิ่มเติม &amp; ร่วมแชร์ความทรงจำ →</a>
+    </div>
   </div>
 </section>
 
@@ -112,7 +116,7 @@
               <input type="radio" name="attending" value="yes"> 💚 มาร่วมงาน
             </label>
             <label class="radio-pill no" id="pill-no">
-              <input type="radio" name="attending" value="no"> 💙 ไม่ได้มาร่วมงาน
+              <input type="radio" name="attending" value="no"> 💔 ไม่สะดวก
             </label>
           </div>
         </div>
@@ -147,7 +151,7 @@
   <div class="container">
     <h2 class="section-title">สถานที่จัดงาน</h2>
     <p class="section-sub">ริมธารา Rimtara พระราม 3 (ห้อง ริมนที) อาคาร Sv City</p>
-    <div class="gallery-grid" id="venue-grid" style="display:none; margin-bottom:20px;"></div>
+    <div class="masonry-grid" id="venue-grid" style="display:none; margin-bottom:20px;"></div>
     <div class="map-frame">
       <iframe
         src="https://maps.google.com/maps?q=13.6719926,100.5442374&hl=th&z=16&ie=UTF8&iwloc=&output=embed"
@@ -176,6 +180,8 @@
 
 <div class="lightbox" id="home-lightbox" style="display:none;">
   <span class="lightbox-close" id="home-lightbox-close">&times;</span>
+  <button class="lightbox-nav lightbox-prev" id="home-lightbox-prev" aria-label="ก่อนหน้า">&#8249;</button>
+  <button class="lightbox-nav lightbox-next" id="home-lightbox-next" aria-label="ถัดไป">&#8250;</button>
   <div class="lightbox-inner" id="home-lightbox-inner"></div>
 </div>
 
@@ -207,26 +213,70 @@
   // ---------- Pre-wedding photos / opening video / venue photos ----------
   var homeLightbox = document.getElementById('home-lightbox');
   var homeLightboxInner = document.getElementById('home-lightbox-inner');
+  var hlItems = [];
+  var hlIndex = -1;
 
-  function openHomeLightbox(src) {
-    homeLightboxInner.innerHTML = '<img src="' + src + '" style="border-radius:14px; max-height:80vh; margin:0 auto;">';
+  function escHtmlHome(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  function openHomeLightbox(photos, idx) {
+    hlItems = photos;
+    hlIndex = idx;
+    renderHomeLightbox();
     homeLightbox.style.display = 'flex';
+  }
+  function renderHomeLightbox() {
+    var p = hlItems[hlIndex];
+    if (!p) return;
+    var meta = p.caption ? '<div class="lightbox-meta">' + escHtmlHome(p.caption) + '</div>' : '';
+    var counter = hlItems.length > 1
+      ? '<div class="lightbox-counter">' + (hlIndex + 1) + ' / ' + hlItems.length + '</div>'
+      : '';
+    homeLightboxInner.innerHTML = '<img src="' + p.src + '" style="border-radius:14px; max-height:78vh; max-width:100%; display:block; margin:0 auto;">' + meta + counter;
+    homeLightboxInner.classList.remove('lightbox-inner');
+    void homeLightboxInner.offsetWidth;
+    homeLightboxInner.classList.add('lightbox-inner');
   }
   function closeHomeLightbox() {
     homeLightbox.style.display = 'none';
     homeLightboxInner.innerHTML = '';
+    hlItems = []; hlIndex = -1;
+  }
+  function showHomePrev() {
+    if (!hlItems.length) return;
+    hlIndex = (hlIndex - 1 + hlItems.length) % hlItems.length;
+    renderHomeLightbox();
+  }
+  function showHomeNext() {
+    if (!hlItems.length) return;
+    hlIndex = (hlIndex + 1) % hlItems.length;
+    renderHomeLightbox();
   }
   document.getElementById('home-lightbox-close').addEventListener('click', closeHomeLightbox);
+  document.getElementById('home-lightbox-prev').addEventListener('click', function (e) { e.stopPropagation(); showHomePrev(); });
+  document.getElementById('home-lightbox-next').addEventListener('click', function (e) { e.stopPropagation(); showHomeNext(); });
   homeLightbox.addEventListener('click', function (e) {
     if (e.target.id === 'home-lightbox') closeHomeLightbox();
   });
+  document.addEventListener('keydown', function (e) {
+    if (homeLightbox.style.display !== 'flex') return;
+    if (e.key === 'Escape') closeHomeLightbox();
+    else if (e.key === 'ArrowLeft') showHomePrev();
+    else if (e.key === 'ArrowRight') showHomeNext();
+  });
 
   function renderPhotoGrid(grid, photos) {
-    photos.forEach(function (p) {
+    grid.innerHTML = '';
+    photos.forEach(function (p, idx) {
       var div = document.createElement('div');
-      div.className = 'gallery-item';
-      div.innerHTML = '<img src="' + p.src + '" loading="lazy" alt="' + (p.caption || '') + '">';
-      div.addEventListener('click', function () { openHomeLightbox(p.src); });
+      div.className = 'masonry-item';
+      div.style.animationDelay = Math.min(idx * 0.045, 0.6) + 's';
+      var cap = p.caption ? '<div class="item-overlay"><div class="item-caption">' + escHtmlHome(p.caption) + '</div></div>' : '';
+      div.innerHTML = '<img src="' + p.src + '" loading="lazy" alt="' + escHtmlHome(p.caption || '') + '">' + cap;
+      div.addEventListener('click', function () { openHomeLightbox(photos, idx); });
       grid.appendChild(div);
     });
   }
@@ -243,11 +293,15 @@
       document.getElementById('pw-video').src = videoSrc;
       document.getElementById('pw-video-wrap').style.display = 'block';
     }
+    if (pwPhotos.length > 0) {
+      document.getElementById('pw-count').textContent = '📸 ' + pwPhotos.length + ' ภาพ';
+      document.getElementById('pw-more-wrap').style.display = 'block';
+    }
     renderPhotoGrid(document.getElementById('pw-grid'), pwPhotos);
 
     if (venuePhotos.length > 0) {
       var venueGrid = document.getElementById('venue-grid');
-      venueGrid.style.display = 'grid';
+      venueGrid.style.display = 'block';
       renderPhotoGrid(venueGrid, venuePhotos);
     }
   }
