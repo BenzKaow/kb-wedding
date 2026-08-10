@@ -53,13 +53,8 @@
       <video id="pw-video" playsinline></video>
     </div>
 
-    <!-- single large auto-rotating slideshow -->
-    <div class="pw-hero-slideshow" id="pw-hero-slideshow" style="display:none;">
-      <div class="pw-hero-stage" id="pw-hero-stage"></div>
-      <button class="pw-hero-nav pw-hero-prev" id="pw-hero-prev" aria-label="ก่อนหน้า">&#8249;</button>
-      <button class="pw-hero-nav pw-hero-next" id="pw-hero-next" aria-label="ถัดไป">&#8250;</button>
-      <div class="pw-hero-counter" id="pw-hero-counter"></div>
-    </div>
+    <!-- rows of large auto-rotating slideshows: 2 / 1 / 2 -->
+    <div class="pw-slideshow-rows" id="pw-slideshow-rows" style="display:none;"></div>
 
     <div id="pw-more-wrap" style="display:none; text-align:center; margin-top:26px;">
       <a class="btn outline" href="gallery.html">ดูรูปเพิ่มเติม &amp; ร่วมแชร์ความทรงจำ →</a>
@@ -300,14 +295,17 @@
     });
   }
 
-  // ---------- single large auto-rotating slideshow (minimal, no album below) ----------
-  function buildHeroSlideshow(photos) {
+  // ---------- one large auto-rotating slideshow widget (reused for every box) ----------
+  function createSlideshowWidget(photos, box) {
     if (!photos.length) return;
-    var stage = document.getElementById('pw-hero-stage');
-    var counterEl = document.getElementById('pw-hero-counter');
-    var wrap = document.getElementById('pw-hero-slideshow');
+    box.innerHTML =
+      '<div class="pw-hero-stage"></div>' +
+      '<button class="pw-hero-nav pw-hero-prev" aria-label="ก่อนหน้า">&#8249;</button>' +
+      '<button class="pw-hero-nav pw-hero-next" aria-label="ถัดไป">&#8250;</button>' +
+      '<div class="pw-hero-counter"></div>';
+    var stage = box.querySelector('.pw-hero-stage');
+    var counterEl = box.querySelector('.pw-hero-counter');
     var idx = 0;
-    stage.innerHTML = '';
 
     photos.forEach(function (p, i) {
       var img = document.createElement('img');
@@ -325,19 +323,65 @@
     }
     function goPrev() { idx = (idx - 1 + photos.length) % photos.length; render(); }
     function goNext() { idx = (idx + 1) % photos.length; render(); }
-    document.getElementById('pw-hero-prev').addEventListener('click', function (e) { e.stopPropagation(); goPrev(); });
-    document.getElementById('pw-hero-next').addEventListener('click', function (e) { e.stopPropagation(); goNext(); });
+    box.querySelector('.pw-hero-prev').addEventListener('click', function (e) { e.stopPropagation(); goPrev(); });
+    box.querySelector('.pw-hero-next').addEventListener('click', function (e) { e.stopPropagation(); goNext(); });
 
     var timer = null;
     function startAuto() { timer = setInterval(goNext, 4000); }
     function stopAuto() { clearInterval(timer); }
     if (photos.length > 1) {
       startAuto();
-      wrap.addEventListener('mouseenter', stopAuto);
-      wrap.addEventListener('mouseleave', startAuto);
+      box.addEventListener('mouseenter', stopAuto);
+      box.addEventListener('mouseleave', startAuto);
+    }
+    render();
+  }
+
+  // split arr into n groups as evenly as possible
+  function splitEven(arr, n) {
+    var groups = [];
+    var base = Math.floor(arr.length / n);
+    var rem = arr.length % n;
+    var start = 0;
+    for (var i = 0; i < n; i++) {
+      var size = base + (i < rem ? 1 : 0);
+      groups.push(arr.slice(start, start + size));
+      start += size;
+    }
+    return groups;
+  }
+
+  // ---------- rows of slideshows: 2 boxes / 1 box / 2 boxes ----------
+  function buildSlideshowRows(photos) {
+    var wrap = document.getElementById('pw-slideshow-rows');
+    wrap.innerHTML = '';
+    if (!photos.length) return;
+
+    if (photos.length < 5) {
+      // ไม่พอสำหรับแบ่ง 5 ชุด ใช้สไลด์โชว์เดี่ยวแทนเพื่อไม่ให้บางช่องว่างเปล่า
+      var single = document.createElement('div');
+      single.className = 'pw-hero-slideshow pw-ss-single';
+      wrap.appendChild(single);
+      createSlideshowWidget(photos, single);
+      wrap.style.display = 'block';
+      return;
     }
 
-    render();
+    var groups = splitEven(photos, 5);
+    var rowsLayout = [2, 1, 2]; // จำนวนสไลด์โชว์ต่อแถว ตามที่ขอ
+    var gi = 0;
+    rowsLayout.forEach(function (colCount) {
+      var row = document.createElement('div');
+      row.className = 'pw-ss-row pw-ss-row-' + colCount;
+      for (var c = 0; c < colCount; c++) {
+        var box = document.createElement('div');
+        box.className = 'pw-hero-slideshow';
+        row.appendChild(box);
+        createSlideshowWidget(groups[gi], box);
+        gi++;
+      }
+      wrap.appendChild(row);
+    });
     wrap.style.display = 'block';
   }
 
@@ -367,7 +411,7 @@
     if (pwPhotos.length > 0) {
       document.getElementById('pw-count').textContent = '📸 ' + pwPhotos.length + ' ภาพ';
       document.getElementById('pw-more-wrap').style.display = 'block';
-      buildHeroSlideshow(pwPhotos);
+      buildSlideshowRows(pwPhotos);
     }
 
     if (venuePhotos.length > 0) {
