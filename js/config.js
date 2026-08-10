@@ -80,18 +80,13 @@ window.WEDDING_CONFIG = {
 
     // รูปพรีเวดดิ้ง / คู่บ่าวสาว (แสดงเป็น section ใหม่ต่อจากหน้าปก)
     prewedding: [
-      { src: 'assets/gallery/prewedding/LINE_ALBUM_10869_260810_1.jpg', caption: '' },
-      { src: 'assets/gallery/prewedding/LINE_ALBUM_10869_260810_2.jpg', caption: '' },
       { src: 'assets/gallery/prewedding/LINE_ALBUM_10869_260810_3.jpg', caption: '' },
       { src: 'assets/gallery/prewedding/LINE_ALBUM_10869_260810_4.jpg', caption: '' },
       { src: 'assets/gallery/prewedding/LINE_ALBUM_10869_260810_5.jpg', caption: '' },
-      { src: 'assets/gallery/prewedding/LINE_ALBUM_10869_260810_6.jpg', caption: '' },
       { src: 'assets/gallery/prewedding/LINE_ALBUM_10869_260810_7.jpg', caption: '' },
       { src: 'assets/gallery/prewedding/LINE_ALBUM_10869_260810_8.jpg', caption: '' },
       { src: 'assets/gallery/prewedding/LINE_ALBUM_10869_260810_9.jpg', caption: '' },
       { src: 'assets/gallery/prewedding/LINE_ALBUM_10869_260810_10.jpg', caption: '' },
-      { src: 'assets/gallery/prewedding/LINE_ALBUM_10869_260810_11.jpg', caption: '' },
-      { src: 'assets/gallery/prewedding/LINE_ALBUM_10869_260810_12.jpg', caption: '' },
       { src: 'assets/gallery/prewedding/LINE_ALBUM_10869_260810_13.jpg', caption: '' },
       { src: 'assets/gallery/prewedding/LINE_ALBUM_10869_260810_14.jpg', caption: '' },
       { src: 'assets/gallery/prewedding/LINE_ALBUM_10869_260810_15.jpg', caption: '' },
