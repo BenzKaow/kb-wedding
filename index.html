@@ -43,7 +43,7 @@
 </header>
 
 <!-- PRE-WEDDING / OPENING VIDEO -->
-<section class="section" id="prewedding-section" style="display:none;">
+<section class="section" id="prewedding-section" style="display:none; padding-bottom:0;">
   <div class="container">
     <h2 class="section-title">ก่อนจะมาถึงวันนี้</h2>
     <p class="section-sub">เรื่องราวความรักของเราผ่านภาพและวีดีโอ<span id="pw-count" class="pw-count-tag"></span></p>
@@ -52,22 +52,14 @@
       <button class="pw-play-btn" id="pw-play-btn" aria-label="เล่นวีดีโอ">&#9658;</button>
       <video id="pw-video" playsinline></video>
     </div>
+    <p class="pw-scroll-hint" id="pw-scroll-hint" style="display:none;">เลื่อนลงเพื่อชมเรื่องราวของเรา ↓</p>
   </div>
 
-  <!-- editorial 3-column strip: static / auto-carousel / static (full-bleed, fades in on scroll) -->
-  <div class="pw-editorial-row" id="pw-editorial-row" style="display:none;">
-    <div class="pw-editorial-col pw-editorial-static" id="pw-editorial-left"></div>
-    <div class="pw-editorial-col pw-editorial-carousel">
-      <div class="pw-editorial-stage" id="pw-editorial-stage"></div>
-      <div class="pw-slideshow-dots" id="pw-editorial-dots"></div>
-    </div>
-    <div class="pw-editorial-col pw-editorial-static" id="pw-editorial-right"></div>
-  </div>
+  <!-- full-screen scrolling story: one photo per viewport, gentle parallax drift -->
+  <div class="pw-story" id="pw-story"></div>
 
   <div class="container">
-    <!-- full masonry album -->
-    <div class="masonry-grid" id="pw-grid"></div>
-    <div id="pw-more-wrap" style="display:none; text-align:center; margin-top:26px;">
+    <div id="pw-more-wrap" style="display:none; text-align:center; margin:34px 0;">
       <a class="btn outline" href="gallery.html">ดูรูปเพิ่มเติม &amp; ร่วมแชร์ความทรงจำ →</a>
     </div>
   </div>
@@ -131,7 +123,7 @@
               <input type="radio" name="attending" value="yes"> 💚 มาร่วมงาน
             </label>
             <label class="radio-pill no" id="pill-no">
-              <input type="radio" name="attending" value="no"> 💙 ไม่ได้มาร่วมงาน
+              <input type="radio" name="attending" value="no"> 💔 ไม่สะดวก
             </label>
           </div>
         </div>
@@ -306,67 +298,61 @@
     });
   }
 
-  // pick n items evenly spread across arr (keeps carousel varied without needing every photo)
-  function pickEven(arr, n) {
-    if (arr.length <= n) return arr.slice();
-    var result = [];
-    var step = arr.length / n;
-    for (var i = 0; i < n; i++) result.push(arr[Math.floor(i * step)]);
-    return result;
-  }
+  // ---------- full-screen scrolling story with parallax drift ----------
+  function buildStory(photos) {
+    var wrap = document.getElementById('pw-story');
+    wrap.innerHTML = '';
+    if (!photos.length) return;
+    var slides = [];
 
-  // ---------- editorial row: static photo / auto-fade carousel / static photo ----------
-  function buildEditorialRow(photos) {
-    if (photos.length < 3) return; // ไม่พอสำหรับเลย์เอาต์นี้ (อัลบั้มด้านล่างยังโชว์ครบทุกรูปตามปกติ)
-    var left = photos[0];
-    var right = photos[photos.length - 1];
-    var middleSource = photos.slice(1, photos.length - 1);
-    if (!middleSource.length) middleSource = [left];
-    var slides = pickEven(middleSource, 6);
-
-    var leftEl = document.getElementById('pw-editorial-left');
-    var rightEl = document.getElementById('pw-editorial-right');
-    leftEl.innerHTML = '<img src="' + left.src + '" loading="lazy" alt="' + escHtmlHome(left.caption || '') + '">';
-    leftEl.addEventListener('click', function () { openHomeLightbox(photos, photos.indexOf(left)); });
-    rightEl.innerHTML = '<img src="' + right.src + '" loading="lazy" alt="' + escHtmlHome(right.caption || '') + '">';
-    rightEl.addEventListener('click', function () { openHomeLightbox(photos, photos.indexOf(right)); });
-
-    var stage = document.getElementById('pw-editorial-stage');
-    var dotsWrap = document.getElementById('pw-editorial-dots');
-    var idx = 0;
-    stage.innerHTML = '';
-    dotsWrap.innerHTML = '';
-    slides.forEach(function (p, i) {
-      var img = document.createElement('img');
-      img.src = p.src;
-      img.loading = 'lazy';
-      img.alt = p.caption || '';
-      if (i === 0) img.classList.add('active');
-      stage.appendChild(img);
-
-      var dot = document.createElement('span');
-      if (i === 0) dot.classList.add('active');
-      dot.addEventListener('click', function (e) { e.stopPropagation(); goToSlide(i); });
-      dotsWrap.appendChild(dot);
+    photos.forEach(function (p, idx) {
+      var slide = document.createElement('div');
+      slide.className = 'pw-slide';
+      var cap = p.caption ? '<div class="pw-slide-caption">' + escHtmlHome(p.caption) + '</div>' : '';
+      slide.innerHTML =
+        '<div class="pw-slide-media"><img src="' + p.src + '" loading="lazy" alt="' + escHtmlHome(p.caption || '') + '"></div>' +
+        '<div class="pw-slide-overlay"><span class="pw-slide-counter">' + (idx + 1) + ' / ' + photos.length + '</span>' + cap + '</div>';
+      slide.addEventListener('click', function () { openHomeLightbox(photos, idx); });
+      wrap.appendChild(slide);
+      slides.push(slide);
     });
-    stage.addEventListener('click', function () { openHomeLightbox(photos, photos.indexOf(slides[idx])); });
 
-    function goToSlide(i) {
-      idx = i;
-      Array.prototype.forEach.call(stage.querySelectorAll('img'), function (im, k) { im.classList.toggle('active', k === i); });
-      Array.prototype.forEach.call(dotsWrap.querySelectorAll('span'), function (d, k) { d.classList.toggle('active', k === i); });
+    // fade the caption/counter in once a slide is mostly in view
+    var revealObserver = ('IntersectionObserver' in window) ? new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) { entry.target.classList.toggle('pw-in-view', entry.isIntersecting); });
+    }, { threshold: 0.35 }) : null;
+
+    // only slides near the viewport get their parallax transform updated (cheap even with many photos)
+    var activeSlides = [];
+    var trackObserver = ('IntersectionObserver' in window) ? new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var i = activeSlides.indexOf(entry.target);
+        if (entry.isIntersecting) { if (i === -1) activeSlides.push(entry.target); }
+        else if (i !== -1) { activeSlides.splice(i, 1); }
+      });
+    }, { rootMargin: '100% 0px 100% 0px' }) : null;
+
+    slides.forEach(function (s) {
+      if (revealObserver) { revealObserver.observe(s); } else { s.classList.add('pw-in-view'); }
+      if (trackObserver) { trackObserver.observe(s); } else { activeSlides.push(s); }
+    });
+
+    var ticking = false;
+    function updateParallax() {
+      ticking = false;
+      var vh = window.innerHeight;
+      activeSlides.forEach(function (s) {
+        var rect = s.getBoundingClientRect();
+        var center = rect.top + rect.height / 2;
+        var progress = (vh / 2 - center) / vh; // roughly -0.5..0.5 while the slide is on screen
+        var media = s.querySelector('.pw-slide-media');
+        if (media) media.style.transform = 'translateY(' + (progress * 70).toFixed(1) + 'px)';
+      });
     }
-    function nextSlide() { goToSlide((idx + 1) % slides.length); }
-
-    var rowEl = document.getElementById('pw-editorial-row');
-    if (slides.length > 1) {
-      var carouselTimer = setInterval(nextSlide, 3400);
-      rowEl.addEventListener('mouseenter', function () { clearInterval(carouselTimer); });
-      rowEl.addEventListener('mouseleave', function () { carouselTimer = setInterval(nextSlide, 3400); });
-    }
-
-    rowEl.style.display = 'flex';
-    if (pwObserver) { pwObserver.observe(rowEl); } else { rowEl.classList.add('pw-in-view'); }
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(updateParallax); }
+    }, { passive: true });
+    updateParallax();
   }
 
   // ---------- video: custom play button overlay ----------
@@ -395,9 +381,9 @@
     if (pwPhotos.length > 0) {
       document.getElementById('pw-count').textContent = '📸 ' + pwPhotos.length + ' ภาพ';
       document.getElementById('pw-more-wrap').style.display = 'block';
-      buildEditorialRow(pwPhotos);
+      document.getElementById('pw-scroll-hint').style.display = 'block';
+      buildStory(pwPhotos);
     }
-    renderPhotoGrid(document.getElementById('pw-grid'), pwPhotos);
 
     if (venuePhotos.length > 0) {
       var venueGrid = document.getElementById('venue-grid');
