@@ -38,7 +38,7 @@ window.WEDDING_CONFIG = {
   eventTimeRange: '16.00 - 22.00 น.',
 
   themeColors: [
-    { name: , hex: '#F4C6CE' },
+    { name: 'ชมพ', hex: '#F4C6CE' },
     { name: 'ชมพูอ่อน', hex: '#F8DCE2' },
     { name: 'มินท์', hex: '#BFE3D4' },
     { name: 'เขียวอ่อน', hex: '#D7EAC8' },
