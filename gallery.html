@@ -29,18 +29,40 @@
 <section class="section" style="padding-top:0">
   <div class="container">
 
-    <div class="upload-box">
+    <div class="upload-box" id="upload-box">
       <p style="margin-top:0; font-weight:500;">เพิ่มรูปภาพหรือวีดีโอของท่าน</p>
       <input type="file" id="file-input" accept="image/*,video/*" style="display:none">
       <input type="text" id="uploader-name" class="form-control" placeholder="ชื่อของท่าน (ไม่บังคับ)" style="max-width:320px; margin:0 auto 12px;">
+      <div id="upload-preview"></div>
       <button class="btn" id="pick-file-btn">เลือกไฟล์เพื่ออัพโหลด</button>
-      <div id="upload-preview" style="margin-top:16px;"></div>
+      <p style="font-size:0.8rem; color:var(--text-soft); margin:10px 0 0;">หรือลากไฟล์มาวางตรงนี้ก็ได้ค่ะ</p>
       <div id="upload-alert"></div>
-      <p style="font-size:0.78rem; color:var(--text-soft); margin-bottom:0;">รองรับรูปภาพไม่เกิน 12MB และวีดีโอไม่เกิน 60MB</p>
+      <p style="font-size:0.78rem; color:var(--text-soft); margin-bottom:0; margin-top:10px;">รองรับรูปภาพไม่เกิน 12MB และวีดีโอไม่เกิน 60MB</p>
     </div>
 
-    <div id="gallery-loading" class="loading">กำลังโหลดรูปภาพ...</div>
-    <div class="gallery-grid" id="gallery-grid"></div>
+    <div class="gallery-filters" id="gallery-filters" style="display:none;">
+      <button class="filter-pill active" data-filter="all">ทั้งหมด</button>
+      <button class="filter-pill" data-filter="image">รูปภาพ</button>
+      <button class="filter-pill" data-filter="video">วีดีโอ</button>
+    </div>
+
+    <div class="gallery-refresh-row">
+      <button class="btn outline small" id="refresh-btn">↻ รีเฟรช</button>
+    </div>
+
+    <div class="skeleton-grid" id="gallery-skeleton">
+      <div class="skeleton-item" style="height:220px;"></div>
+      <div class="skeleton-item" style="height:160px;"></div>
+      <div class="skeleton-item" style="height:260px;"></div>
+      <div class="skeleton-item" style="height:190px;"></div>
+      <div class="skeleton-item" style="height:150px;"></div>
+      <div class="skeleton-item" style="height:230px;"></div>
+    </div>
+    <div id="gallery-error" style="display:none; text-align:center; padding:30px;">
+      <p style="color:var(--text-soft);">โหลดรูปภาพไม่สำเร็จ กรุณาลองใหม่อีกครั้ง</p>
+      <button class="btn outline small" id="retry-btn">ลองใหม่</button>
+    </div>
+    <div class="masonry-grid" id="gallery-grid" style="display:none;"></div>
   </div>
 </section>
 
@@ -51,6 +73,8 @@
 
 <div class="lightbox" id="lightbox" style="display:none;">
   <span class="lightbox-close" id="lightbox-close">&times;</span>
+  <button class="lightbox-nav lightbox-prev" id="lightbox-prev" aria-label="ก่อนหน้า">&#8249;</button>
+  <button class="lightbox-nav lightbox-next" id="lightbox-next" aria-label="ถัดไป">&#8250;</button>
   <div class="lightbox-inner" id="lightbox-inner"></div>
 </div>
 
@@ -59,72 +83,185 @@
 <script>
 (function () {
   var grid = document.getElementById('gallery-grid');
-  var loadingEl = document.getElementById('gallery-loading');
+  var skeletonEl = document.getElementById('gallery-skeleton');
+  var errorEl = document.getElementById('gallery-error');
+  var filtersEl = document.getElementById('gallery-filters');
   var fileInput = document.getElementById('file-input');
   var pickBtn = document.getElementById('pick-file-btn');
   var previewEl = document.getElementById('upload-preview');
   var alertEl = document.getElementById('upload-alert');
+  var uploadBox = document.getElementById('upload-box');
+
+  var allItems = [];
+  var currentFilter = 'all';
+  var visibleItems = [];
+  var lightboxIndex = -1;
+
+  function itemsForFilter(f) {
+    if (f === 'all') return allItems;
+    return allItems.filter(function (it) { return it.type === f; });
+  }
 
   function loadGallery() {
     if (!window.WeddingAPI.isConfigured()) {
-      loadingEl.textContent = 'ระบบยังไม่ได้เชื่อมต่อ API (สำหรับผู้ดูแล: ใส่ API_URL ใน js/config.js)';
+      skeletonEl.style.display = 'none';
+      errorEl.style.display = 'block';
+      errorEl.querySelector('p').textContent = 'ระบบยังไม่ได้เชื่อมต่อ API (สำหรับผู้ดูแล: ใส่ API_URL ใน js/config.js)';
       return;
     }
+    skeletonEl.style.display = '';
+    errorEl.style.display = 'none';
+    grid.style.display = 'none';
     window.WeddingAPI.get('getGalleryPublic').then(function (res) {
-      loadingEl.style.display = 'none';
-      var items = (res && res.items) || [];
-      grid.innerHTML = '';
-      if (items.length === 0) {
-        grid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--text-soft);">ยังไม่มีรูปภาพ เป็นคนแรกที่แชร์ความทรงจำสิคะ 🌸</p>';
-        return;
-      }
-      items.forEach(function (item) {
-        var div = document.createElement('div');
-        div.className = 'gallery-item';
-        if (item.type === 'video') {
-          div.innerHTML = '<img class="video-thumb" src="' + item.thumbUrl + '" loading="lazy" alt=""><div class="video-badge">▶</div>';
-        } else {
-          div.innerHTML = '<img src="' + item.thumbUrl + '" loading="lazy" alt="' + (item.caption || '') + '">';
-        }
-        div.addEventListener('click', function () { openLightbox(item); });
-        grid.appendChild(div);
-      });
+      allItems = (res && res.items) || [];
+      skeletonEl.style.display = 'none';
+      grid.style.display = '';
+      filtersEl.style.display = allItems.length > 0 ? 'flex' : 'none';
+      renderGrid();
     }).catch(function () {
-      loadingEl.textContent = 'โหลดรูปภาพไม่สำเร็จ กรุณาลองใหม่อีกครั้ง';
+      skeletonEl.style.display = 'none';
+      errorEl.style.display = 'block';
     });
   }
 
-  function openLightbox(item) {
-    var lb = document.getElementById('lightbox');
-    var inner = document.getElementById('lightbox-inner');
-    if (item.type === 'video') {
-      inner.innerHTML = '<iframe src="' + item.url + '" allow="autoplay" style="width:100%; height:70vh; border-radius:14px;"></iframe>';
-    } else {
-      inner.innerHTML = '<img src="' + item.url + '" style="border-radius:14px; max-height:80vh; margin:0 auto;">';
+  function renderGrid() {
+    visibleItems = itemsForFilter(currentFilter);
+    grid.innerHTML = '';
+    if (visibleItems.length === 0) {
+      grid.innerHTML = '<div class="gallery-empty"><span class="emoji">🌸</span>' +
+        (allItems.length === 0
+          ? 'ยังไม่มีรูปภาพ เป็นคนแรกที่แชร์ความทรงจำสิคะ'
+          : 'ยังไม่มีรายการในหมวดนี้') +
+        '</div>';
+      return;
     }
-    if (item.caption) {
-      inner.innerHTML += '<p style="text-align:center; color:white; margin-top:12px;">' + item.caption + '</p>';
-    }
-    lb.style.display = 'flex';
+    visibleItems.forEach(function (item, idx) {
+      var div = document.createElement('div');
+      div.className = 'masonry-item';
+      div.style.animationDelay = Math.min(idx * 0.045, 0.6) + 's';
+      var caption = item.caption || item.uploaderName || '';
+      if (item.type === 'video') {
+        div.innerHTML = '<img loading="lazy" src="' + item.thumbUrl + '" alt="">' +
+          '<div class="video-badge">&#9658;</div>' +
+          (caption ? '<div class="item-overlay"><div class="item-caption">' + escHtml(caption) + '</div></div>' : '');
+      } else {
+        div.innerHTML = '<img loading="lazy" src="' + item.thumbUrl + '" alt="' + escHtml(item.caption || '') + '">' +
+          (caption ? '<div class="item-overlay"><div class="item-caption">' + escHtml(caption) + '</div></div>' : '');
+      }
+      div.addEventListener('click', function () { openLightbox(idx); });
+      grid.appendChild(div);
+    });
   }
-  document.getElementById('lightbox-close').addEventListener('click', function () {
-    document.getElementById('lightbox').style.display = 'none';
-    document.getElementById('lightbox-inner').innerHTML = '';
-  });
-  document.getElementById('lightbox').addEventListener('click', function (e) {
-    if (e.target.id === 'lightbox') {
-      document.getElementById('lightbox').style.display = 'none';
-      document.getElementById('lightbox-inner').innerHTML = '';
-    }
+
+  function escHtml(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  filtersEl.addEventListener('click', function (e) {
+    var btn = e.target.closest('.filter-pill');
+    if (!btn) return;
+    filtersEl.querySelectorAll('.filter-pill').forEach(function (b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    renderGrid();
   });
 
+  document.getElementById('refresh-btn').addEventListener('click', loadGallery);
+  document.getElementById('retry-btn').addEventListener('click', loadGallery);
+
+  // ---------- Lightbox with prev/next ----------
+  function openLightbox(idx) {
+    lightboxIndex = idx;
+    renderLightbox();
+    document.getElementById('lightbox').style.display = 'flex';
+  }
+
+  function renderLightbox() {
+    var item = visibleItems[lightboxIndex];
+    if (!item) return;
+    var inner = document.getElementById('lightbox-inner');
+    inner.innerHTML = '';
+    var content = document.createElement('div');
+    if (item.type === 'video') {
+      content.innerHTML = '<iframe src="' + item.url + '" allow="autoplay" style="width:100%; height:70vh; border-radius:14px; border:none;"></iframe>';
+    } else {
+      content.innerHTML = '<img src="' + item.url + '" style="border-radius:14px; max-height:78vh; max-width:100%; display:block; margin:0 auto;">';
+    }
+    var meta = (item.caption || item.uploaderName)
+      ? '<div class="lightbox-meta">' + escHtml(item.caption || '') +
+        (item.uploaderName ? ' <span style="opacity:0.7;">— ' + escHtml(item.uploaderName) + '</span>' : '') + '</div>'
+      : '';
+    var counter = visibleItems.length > 1
+      ? '<div class="lightbox-counter">' + (lightboxIndex + 1) + ' / ' + visibleItems.length + '</div>'
+      : '';
+    inner.innerHTML = content.innerHTML + meta + counter;
+    // re-trigger fade animation
+    inner.classList.remove('lightbox-inner');
+    void inner.offsetWidth;
+    inner.classList.add('lightbox-inner');
+  }
+
+  function closeLightbox() {
+    document.getElementById('lightbox').style.display = 'none';
+    document.getElementById('lightbox-inner').innerHTML = '';
+    lightboxIndex = -1;
+  }
+
+  function showPrev() {
+    if (visibleItems.length === 0) return;
+    lightboxIndex = (lightboxIndex - 1 + visibleItems.length) % visibleItems.length;
+    renderLightbox();
+  }
+  function showNext() {
+    if (visibleItems.length === 0) return;
+    lightboxIndex = (lightboxIndex + 1) % visibleItems.length;
+    renderLightbox();
+  }
+
+  document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+  document.getElementById('lightbox-prev').addEventListener('click', function (e) { e.stopPropagation(); showPrev(); });
+  document.getElementById('lightbox-next').addEventListener('click', function (e) { e.stopPropagation(); showNext(); });
+  document.getElementById('lightbox').addEventListener('click', function (e) {
+    if (e.target.id === 'lightbox') closeLightbox();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (document.getElementById('lightbox').style.display !== 'flex') return;
+    if (e.key === 'Escape') closeLightbox();
+    else if (e.key === 'ArrowLeft') showPrev();
+    else if (e.key === 'ArrowRight') showNext();
+  });
+
+  // ---------- Upload (click + drag & drop) ----------
   pickBtn.addEventListener('click', function () { fileInput.click(); });
+
+  ['dragenter', 'dragover'].forEach(function (evt) {
+    uploadBox.addEventListener(evt, function (e) {
+      e.preventDefault(); e.stopPropagation();
+      uploadBox.classList.add('dragover');
+    });
+  });
+  ['dragleave', 'drop'].forEach(function (evt) {
+    uploadBox.addEventListener(evt, function (e) {
+      e.preventDefault(); e.stopPropagation();
+      uploadBox.classList.remove('dragover');
+    });
+  });
+  uploadBox.addEventListener('drop', function (e) {
+    var files = e.dataTransfer && e.dataTransfer.files;
+    if (files && files[0]) handleFile(files[0]);
+  });
 
   fileInput.addEventListener('change', function () {
     var file = fileInput.files[0];
-    if (!file) return;
+    if (file) handleFile(file);
+  });
+
+  function handleFile(file) {
     var isVideo = file.type.indexOf('video') === 0;
     var maxSize = isVideo ? 60 * 1024 * 1024 : 12 * 1024 * 1024;
+    alertEl.innerHTML = '';
     if (file.size > maxSize) {
       alertEl.innerHTML = '<div class="alert error">ไฟล์มีขนาดใหญ่เกินไป (สูงสุด ' + (isVideo ? '60MB สำหรับวีดีโอ' : '12MB สำหรับรูปภาพ') + ')</div>';
       return;
@@ -133,7 +270,31 @@
       alertEl.innerHTML = '<div class="alert error">ระบบยังไม่ได้เชื่อมต่อ API (สำหรับผู้ดูแล: ใส่ API_URL ใน js/config.js)</div>';
       return;
     }
-    previewEl.innerHTML = '<p>กำลังอัพโหลด "' + file.name + '"...</p>';
+
+    previewEl.innerHTML = '';
+    if (!isVideo) {
+      var img = document.createElement('img');
+      img.className = 'upload-preview-thumb';
+      img.src = URL.createObjectURL(file);
+      previewEl.appendChild(img);
+    }
+    var statusP = document.createElement('p');
+    statusP.textContent = 'กำลังอัพโหลด "' + file.name + '"...';
+    previewEl.appendChild(statusP);
+    var barWrap = document.createElement('div');
+    barWrap.className = 'upload-progress-bar';
+    var bar = document.createElement('div');
+    bar.className = 'upload-progress-fill';
+    barWrap.appendChild(bar);
+    previewEl.appendChild(barWrap);
+
+    // ลูกเล่นแถบความคืบหน้า (ไต่ขึ้นเรื่อยๆ ระหว่างรอเซิร์ฟเวอร์ตอบกลับ)
+    var pct = 0;
+    var progressTimer = setInterval(function () {
+      pct = Math.min(pct + Math.random() * 12, 90);
+      bar.style.width = pct + '%';
+    }, 220);
+
     var reader = new FileReader();
     reader.onload = function () {
       var base64 = reader.result.split(',')[1];
@@ -144,22 +305,27 @@
         type: isVideo ? 'video' : 'image',
         uploaderName: document.getElementById('uploader-name').value
       }).then(function (res) {
+        clearInterval(progressTimer);
         if (res && res.success) {
-          previewEl.innerHTML = '';
-          alertEl.innerHTML = '<div class="alert success">อัพโหลดสำเร็จ! ขอบคุณที่แชร์ความทรงจำนะคะ 🎉</div>';
-          fileInput.value = '';
-          loadGallery();
+          bar.style.width = '100%';
+          setTimeout(function () {
+            previewEl.innerHTML = '';
+            alertEl.innerHTML = '<div class="alert success">อัพโหลดสำเร็จ! ขอบคุณที่แชร์ความทรงจำนะคะ 🎉</div>';
+            fileInput.value = '';
+            loadGallery();
+          }, 300);
         } else {
           previewEl.innerHTML = '';
           alertEl.innerHTML = '<div class="alert error">อัพโหลดไม่สำเร็จ: ' + ((res && res.error) || 'unknown') + '</div>';
         }
       }).catch(function () {
+        clearInterval(progressTimer);
         previewEl.innerHTML = '';
         alertEl.innerHTML = '<div class="alert error">เชื่อมต่อไม่สำเร็จ กรุณาลองใหม่อีกครั้ง</div>';
       });
     };
     reader.readAsDataURL(file);
-  });
+  }
 
   loadGallery();
 })();
