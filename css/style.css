@@ -399,11 +399,105 @@ img, video, iframe { max-width: 100%; display: block; }
   display: flex; align-items: center; justify-content: center;
   z-index: 200; padding: 20px;
 }
-.lightbox-inner { max-width: 800px; width: 100%; }
+.lightbox-inner { max-width: 800px; width: 100%; animation: lbFadeIn 0.25s ease; }
+@keyframes lbFadeIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
 .lightbox-close {
   position: absolute; top: 20px; right: 26px;
   color: white; font-size: 2rem; cursor: pointer;
+  width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; transition: background 0.2s ease;
 }
+.lightbox-close:hover { background: rgba(255,255,255,0.12); }
+.lightbox-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  background: rgba(255,255,255,0.14); color: white; border: none;
+  width: 46px; height: 46px; border-radius: 50%; font-size: 1.5rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; line-height: 1;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+.lightbox-nav:hover { background: rgba(255,255,255,0.32); transform: translateY(-50%) scale(1.06); }
+.lightbox-prev { left: 14px; }
+.lightbox-next { right: 14px; }
+.lightbox-counter { color: rgba(255,255,255,0.7); text-align: center; font-size: 0.8rem; margin-top: 12px; letter-spacing: 0.5px; }
+.lightbox-meta { color: white; text-align: center; margin-top: 8px; font-size: 0.92rem; }
+
+/* ---------- Gallery page: filters, masonry, skeleton, upload ---------- */
+.gallery-filters {
+  display: flex; gap: 10px; justify-content: center; margin-bottom: 24px; flex-wrap: wrap;
+}
+.filter-pill {
+  padding: 8px 22px; border-radius: 999px; border: 1.5px solid var(--pink-light);
+  background: var(--white); color: var(--text-soft); font-size: 0.88rem; font-weight: 500;
+  cursor: pointer; transition: all 0.2s ease;
+}
+.filter-pill:hover { border-color: var(--pink-deep); color: var(--pink-deep); }
+.filter-pill.active { background: var(--pink-deep); border-color: var(--pink-deep); color: white; }
+
+.masonry-grid { column-count: 2; column-gap: 14px; }
+@media (min-width: 640px) { .masonry-grid { column-count: 3; } }
+@media (min-width: 960px) { .masonry-grid { column-count: 4; } }
+
+.masonry-item {
+  break-inside: avoid; margin-bottom: 14px; position: relative;
+  border-radius: 14px; overflow: hidden; box-shadow: var(--shadow);
+  cursor: pointer; background: var(--white);
+  opacity: 0; transform: translateY(18px);
+  animation: fadeInUp 0.55s ease forwards;
+}
+@keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+.masonry-item img { width: 100%; display: block; transition: transform 0.4s ease; }
+.masonry-item:hover img { transform: scale(1.06); }
+.masonry-item .item-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(20,16,12,0.7), transparent 58%);
+  opacity: 0; transition: opacity 0.25s ease;
+  display: flex; align-items: flex-end; padding: 12px;
+}
+.masonry-item:hover .item-overlay { opacity: 1; }
+.masonry-item .item-caption { color: white; font-size: 0.78rem; line-height: 1.4; }
+.masonry-item .video-badge {
+  position: absolute; top: 10px; right: 10px;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(0,0,0,0.55); color: white;
+  display: flex; align-items: center; justify-content: center; font-size: 1rem;
+}
+.masonry-item .video-badge::after {
+  content: ''; position: absolute; inset: -6px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.55); animation: pulseRing 2s ease-out infinite;
+}
+@keyframes pulseRing {
+  0% { transform: scale(0.85); opacity: 0.9; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+.skeleton-grid { column-count: 2; column-gap: 14px; }
+@media (min-width: 640px) { .skeleton-grid { column-count: 3; } }
+@media (min-width: 960px) { .skeleton-grid { column-count: 4; } }
+.skeleton-item {
+  break-inside: avoid; margin-bottom: 14px; border-radius: 14px;
+  background: linear-gradient(90deg, #EFE7DC 25%, #F7F1E8 37%, #EFE7DC 63%);
+  background-size: 400% 100%; animation: shimmer 1.4s ease infinite;
+}
+@keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+
+.gallery-empty { grid-column: 1/-1; text-align: center; padding: 40px 20px; color: var(--text-soft); }
+.gallery-empty .emoji { font-size: 2.4rem; display: block; margin-bottom: 10px; }
+
+.upload-box { transition: background 0.2s ease, border-color 0.2s ease; }
+.upload-box.dragover { background: var(--pink-light); border-color: var(--pink-deep); }
+.upload-preview-thumb {
+  max-width: 160px; max-height: 160px; border-radius: 10px; margin: 0 auto 10px;
+  display: block; box-shadow: var(--shadow); object-fit: cover;
+}
+.upload-progress-bar {
+  height: 6px; border-radius: 999px; background: var(--pink-light);
+  overflow: hidden; margin-top: 12px; max-width: 320px; margin-left: auto; margin-right: auto;
+}
+.upload-progress-fill {
+  height: 100%; background: var(--pink-deep); width: 0%;
+  transition: width 0.3s ease; border-radius: 999px;
+}
+.gallery-refresh-row { display: flex; justify-content: flex-end; margin-bottom: 12px; }
 
 /* ---------- Pre-wedding video ---------- */
 .pw-video {
@@ -502,6 +596,9 @@ table.data-table th {
 .status-tag.yes { background: var(--sage-light); color: #3f5638; }
 .status-tag.no { background: #F6DADA; color: #7A3535; }
 .status-tag.pending { background: #F3E7C9; color: #7A5F1F; }
+.status-tag.groom { background: #BFD9EC; color: #2C4F6B; }
+.status-tag.bride { background: #F4C6CE; color: #8A3B49; }
+.status-tag.unassigned { background: #ECE7E1; color: #7A7268; }
 
 .toolbar {
   display: flex;
