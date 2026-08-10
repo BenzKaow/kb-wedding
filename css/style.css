@@ -523,6 +523,53 @@ img, video, iframe { max-width: 100%; display: block; }
   color: var(--pink-deep); font-weight: 500;
 }
 
+/* ---------- Pre-wedding: video play button overlay ---------- */
+.pw-play-btn {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 64px; height: 64px; border-radius: 50%; border: none;
+  background: var(--pink-deep); color: #fff; font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; z-index: 3; box-shadow: 0 8px 22px rgba(0,0,0,0.32);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.pw-play-btn:hover { transform: translate(-50%, -50%) scale(1.08); box-shadow: 0 10px 26px rgba(0,0,0,0.4); }
+
+/* ---------- Pre-wedding: editorial strip (static / auto-carousel / static, full-bleed) ---------- */
+.pw-editorial-row {
+  display: flex; width: 100%; gap: 3px; margin: 26px 0 34px;
+  opacity: 0; transform: translateY(24px);
+}
+.pw-editorial-row.pw-in-view { animation: fadeInUp 0.7s ease forwards; }
+.pw-editorial-col {
+  flex: 1 1 0; aspect-ratio: 3 / 4; overflow: hidden;
+  background: var(--cream-deep); cursor: pointer; position: relative;
+}
+.pw-editorial-col img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pw-editorial-static img { transition: transform 0.5s ease; }
+.pw-editorial-static:hover img { transform: scale(1.06); }
+.pw-editorial-stage { position: relative; width: 100%; height: 100%; }
+.pw-editorial-stage img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  opacity: 0; transition: opacity 1.1s ease;
+}
+.pw-editorial-stage img.active { opacity: 1; }
+.pw-editorial-carousel .pw-slideshow-dots {
+  position: absolute; bottom: 10px; left: 0; right: 0; margin: 0; z-index: 2;
+}
+.pw-editorial-carousel .pw-slideshow-dots span { background: rgba(255,255,255,0.55); }
+.pw-editorial-carousel .pw-slideshow-dots span.active { background: #fff; }
+
+.pw-slideshow-dots { display: flex; justify-content: center; gap: 7px; margin-top: 14px; }
+.pw-slideshow-dots span {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--pink-light);
+  cursor: pointer; transition: background 0.25s ease, transform 0.25s ease;
+}
+.pw-slideshow-dots span.active { background: var(--pink-deep); transform: scale(1.35); }
+
+/* ---------- Pre-wedding: scroll-triggered reveal (overrides load-time animation) ---------- */
+.masonry-item.pw-scroll-item { animation: none; }
+.masonry-item.pw-scroll-item.pw-in-view { animation: fadeInUp 0.6s ease forwards; }
+
 /* ---------- Footer ---------- */
 .site-footer {
   text-align: center;
