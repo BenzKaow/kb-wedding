@@ -534,37 +534,36 @@ img, video, iframe { max-width: 100%; display: block; }
 }
 .pw-play-btn:hover { transform: translate(-50%, -50%) scale(1.08); box-shadow: 0 10px 26px rgba(0,0,0,0.4); }
 
-/* ---------- Pre-wedding: editorial strip (static / auto-carousel / static, full-bleed) ---------- */
-.pw-editorial-row {
-  display: flex; width: 100%; gap: 3px; margin: 26px 0 34px;
-  opacity: 0; transform: translateY(24px);
+/* ---------- Pre-wedding: scroll hint ---------- */
+.pw-scroll-hint {
+  text-align: center; font-size: 0.82rem; color: var(--text-soft);
+  margin: 18px 0 0; animation: pwBounce 2s ease-in-out infinite;
 }
-.pw-editorial-row.pw-in-view { animation: fadeInUp 0.7s ease forwards; }
-.pw-editorial-col {
-  flex: 1 1 0; aspect-ratio: 3 / 4; overflow: hidden;
-  background: var(--cream-deep); cursor: pointer; position: relative;
+@keyframes pwBounce {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50% { transform: translateY(6px); opacity: 1; }
 }
-.pw-editorial-col img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.pw-editorial-static img { transition: transform 0.5s ease; }
-.pw-editorial-static:hover img { transform: scale(1.06); }
-.pw-editorial-stage { position: relative; width: 100%; height: 100%; }
-.pw-editorial-stage img {
-  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
-  opacity: 0; transition: opacity 1.1s ease;
-}
-.pw-editorial-stage img.active { opacity: 1; }
-.pw-editorial-carousel .pw-slideshow-dots {
-  position: absolute; bottom: 10px; left: 0; right: 0; margin: 0; z-index: 2;
-}
-.pw-editorial-carousel .pw-slideshow-dots span { background: rgba(255,255,255,0.55); }
-.pw-editorial-carousel .pw-slideshow-dots span.active { background: #fff; }
 
-.pw-slideshow-dots { display: flex; justify-content: center; gap: 7px; margin-top: 14px; }
-.pw-slideshow-dots span {
-  width: 7px; height: 7px; border-radius: 50%; background: var(--pink-light);
-  cursor: pointer; transition: background 0.25s ease, transform 0.25s ease;
+/* ---------- Pre-wedding: full-screen scrolling story with parallax ---------- */
+.pw-story { position: relative; margin-top: 22px; }
+.pw-slide {
+  position: relative; width: 100%; height: 100vh;
+  overflow: hidden; cursor: pointer; background: #000;
 }
-.pw-slideshow-dots span.active { background: var(--pink-deep); transform: scale(1.35); }
+.pw-slide-media {
+  position: absolute; top: -12%; left: 0; width: 100%; height: 124%;
+  will-change: transform;
+}
+.pw-slide-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pw-slide-overlay {
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 30px 26px;
+  background: linear-gradient(to top, rgba(20,16,12,0.6), transparent 65%);
+  opacity: 0; transform: translateY(10px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.pw-slide.pw-in-view .pw-slide-overlay { opacity: 1; transform: translateY(0); }
+.pw-slide-counter { color: rgba(255,255,255,0.85); font-size: 0.8rem; letter-spacing: 0.5px; }
+.pw-slide-caption { color: #fff; font-size: 0.98rem; margin-top: 4px; }
 
 /* ---------- Pre-wedding: scroll-triggered reveal (overrides load-time animation) ---------- */
 .masonry-item.pw-scroll-item { animation: none; }
