@@ -39,14 +39,14 @@ window.WEDDING_CONFIG = {
 
   themeColors: [
     { name: '', hex: '#F4C6CE' },
-    { name: 'ชมพูอ่อน', hex: '#F8DCE2' },
-    { name: 'มินท์', hex: '#BFE3D4' },
-    { name: 'เขียวอ่อน', hex: '#D7EAC8' },
-    { name: 'เหลือง', hex: '#F5E6A8' },
-    { name: 'ครีม', hex: '#F3E7C9' },
-    { name: 'ฟ้า', hex: '#BFD9EC' },
-    { name: 'ม่วง', hex: '#D6C6E8' },
-    { name: 'น้ำตาล', hex: '#C9A27C' }
+    { name: '', hex: '#F8DCE2' },
+    { name: '', hex: '#BFE3D4' },
+    { name: '', hex: '#D7EAC8' },
+    { name: '', hex: '#F5E6A8' },
+    { name: '', hex: '#F3E7C9' },
+    { name: '', hex: '#BFD9EC' },
+    { name: '', hex: '#D6C6E8' },
+    { name: '', hex: '#C9A27C' }
   ],
 
   social: {
