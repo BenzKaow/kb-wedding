@@ -80,6 +80,8 @@
   </div>
 </section>
 
+<div class="pw-photo-band" id="pw-band-1" style="display:none;"></div>
+
 <!-- SCHEDULE -->
 <section class="section" style="background:var(--cream-deep)">
   <div class="container">
@@ -89,6 +91,8 @@
   </div>
 </section>
 
+<div class="pw-photo-band" id="pw-band-2" style="display:none;"></div>
+
 <!-- THEME / DRESS CODE -->
 <section class="section">
   <div class="container">
@@ -97,6 +101,8 @@
     <div class="theme-colors" id="theme-colors"></div>
   </div>
 </section>
+
+<div class="pw-photo-band" id="pw-band-3" style="display:none;"></div>
 
 <!-- RSVP -->
 <section class="section" id="rsvp" style="background:var(--cream-deep)">
@@ -166,6 +172,8 @@
     </div>
   </div>
 </section>
+
+<div class="pw-photo-band" id="pw-band-4" style="display:none;"></div>
 
 <!-- GIFT / PROMPTPAY -->
 <section class="section" id="gift" style="background:var(--cream-deep)">
@@ -385,6 +393,41 @@
     wrap.style.display = 'block';
   }
 
+  // pick n items evenly spread across arr
+  function pickEven(arr, n) {
+    if (arr.length <= n) return arr.slice();
+    var result = [];
+    var step = arr.length / n;
+    for (var i = 0; i < n; i++) result.push(arr[Math.floor(i * step)]);
+    return result;
+  }
+
+  // ---------- photo bands scattered between the other page sections ----------
+  var bandObserver = ('IntersectionObserver' in window) ? new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('pw-in-view');
+        bandObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 }) : null;
+
+  function buildPhotoBands(photos) {
+    var bandIds = ['pw-band-1', 'pw-band-2', 'pw-band-3', 'pw-band-4'];
+    if (photos.length < bandIds.length) return; // ไม่พอสำหรับกระจายรูป ปล่อยช่องว่างซ่อนไว้ตามเดิม
+    var picks = pickEven(photos, bandIds.length);
+    bandIds.forEach(function (id, i) {
+      var band = document.getElementById(id);
+      if (!band) return;
+      var p = picks[i];
+      var globalIdx = photos.indexOf(p);
+      band.innerHTML = '<img src="' + p.src + '" loading="lazy" alt="' + escHtmlHome(p.caption || '') + '">';
+      band.addEventListener('click', function () { openHomeLightbox(photos, globalIdx); });
+      band.style.display = 'block';
+      if (bandObserver) { bandObserver.observe(band); } else { band.classList.add('pw-in-view'); }
+    });
+  }
+
   // ---------- video: custom play button overlay ----------
   var pwPlayBtn = document.getElementById('pw-play-btn');
   if (pwPlayBtn) {
@@ -412,6 +455,7 @@
       document.getElementById('pw-count').textContent = '📸 ' + pwPhotos.length + ' ภาพ';
       document.getElementById('pw-more-wrap').style.display = 'block';
       buildSlideshowRows(pwPhotos);
+      buildPhotoBands(pwPhotos);
     }
 
     if (venuePhotos.length > 0) {
