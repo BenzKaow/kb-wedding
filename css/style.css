@@ -523,20 +523,6 @@ img, video, iframe { max-width: 100%; display: block; }
   color: var(--pink-deep); font-weight: 500;
 }
 
-/* ---------- Photo bands scattered between other page sections ---------- */
-/* explicit height (not aspect-ratio) so it never depends on flex sizing quirks */
-.pw-photo-band {
-  width: 100%; height: 42vh; min-height: 220px; max-height: 420px;
-  overflow: hidden; cursor: pointer; background: var(--cream-deep);
-  opacity: 0; transform: translateY(18px); transition: opacity 0.7s ease, transform 0.7s ease;
-}
-.pw-photo-band.pw-in-view { opacity: 1; transform: translateY(0); }
-.pw-photo-band img {
-  width: 100%; height: 100%; object-fit: cover; display: block;
-  transition: transform 0.6s ease;
-}
-.pw-photo-band:hover img { transform: scale(1.04); }
-
 /* ---------- Pre-wedding: video play button overlay ---------- */
 .pw-play-btn {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
