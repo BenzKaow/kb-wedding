@@ -62,6 +62,12 @@
           <input type="text" id="g-firstname" class="form-control" placeholder="ชื่อ">
           <input type="text" id="g-lastname" class="form-control" placeholder="นามสกุล">
           <input type="text" id="g-position" class="form-control" placeholder="ตำแหน่ง/หมายเหตุ">
+          <input type="text" id="g-aka" class="form-control" placeholder="AKA / ชื่อเล่นอื่น">
+          <select id="g-side" class="form-control">
+            <option value="">ฝั่ง (ไม่ระบุ)</option>
+            <option value="groom">ฝั่งเจ้าบ่าว</option>
+            <option value="bride">ฝั่งเจ้าสาว</option>
+          </select>
           <button class="btn secondary" id="g-add-btn">+ เพิ่มแขก</button>
         </div>
       </div>
@@ -71,8 +77,14 @@
         <select id="guest-filter" class="form-control" style="max-width:180px;">
           <option value="all">ทั้งหมด</option>
           <option value="yes">มาร่วมงาน</option>
-          <option value="no">ไม่ได้มาร่วมงาน</option>
+          <option value="no">ไม่สะดวก</option>
           <option value="pending">ยังไม่ตอบ</option>
+        </select>
+        <select id="guest-side-filter" class="form-control" style="max-width:180px;">
+          <option value="all">ทุกฝั่ง</option>
+          <option value="groom">ฝั่งเจ้าบ่าว</option>
+          <option value="bride">ฝั่งเจ้าสาว</option>
+          <option value="none">ไม่ระบุฝั่ง</option>
         </select>
         <button class="btn outline small" id="export-csv-btn">⬇ Export CSV</button>
       </div>
@@ -80,7 +92,7 @@
       <div class="table-wrap">
         <table class="data-table">
           <thead>
-            <tr><th>ชื่อ-นามสกุล</th><th>ตำแหน่ง/หมายเหตุ</th><th>สถานะ</th><th>จำนวน</th><th>เบอร์โทร</th><th>ข้อความ</th><th></th></tr>
+            <tr><th>ชื่อ-นามสกุล</th><th>ฝั่ง</th><th>ตำแหน่ง/หมายเหตุ</th><th>AKA</th><th>สถานะ</th><th>จำนวน</th><th>เบอร์โทร</th><th>ข้อความ</th><th></th></tr>
           </thead>
           <tbody id="guests-tbody"></tbody>
         </table>
@@ -192,7 +204,7 @@
         statCard(s.total, 'แขกทั้งหมด') +
         statCard(s.yes, 'ตอบรับมา') +
         statCard(s.headcount, 'จำนวนคนที่มาจริง') +
-        statCard(s.no, 'ไม่ได้มาร่วมงาน') +
+        statCard(s.no, 'ไม่สะดวก') +
         statCard(s.pending, 'ยังไม่ตอบ');
     });
     window.WeddingAPI.get('adminGetExpenses', { token: getToken() }).then(function (res) {
@@ -216,6 +228,12 @@
   }
 
   // ---------- Guests ----------
+  function sideTag(side) {
+    if (side === 'groom') return '<span class="status-tag groom">ฝั่งเจ้าบ่าว</span>';
+    if (side === 'bride') return '<span class="status-tag bride">ฝั่งเจ้าสาว</span>';
+    return '<span class="status-tag unassigned">-</span>';
+  }
+
   function loadGuests() {
     window.WeddingAPI.get('adminGetGuests', { token: getToken() }).then(function (res) {
       guestData = res.guests || [];
@@ -224,8 +242,10 @@
         statCard(s.total, 'แขกทั้งหมด') +
         statCard(s.yes, 'ตอบรับมา') +
         statCard(s.headcount, 'จำนวนคนที่มาจริง') +
-        statCard(s.no, 'ไม่ได้มาร่วมงาน') +
-        statCard(s.pending, 'ยังไม่ตอบ');
+        statCard(s.no, 'ไม่สะดวก') +
+        statCard(s.pending, 'ยังไม่ตอบ') +
+        statCard(s.groomSide, 'ฝั่งเจ้าบ่าว') +
+        statCard(s.brideSide, 'ฝั่งเจ้าสาว');
       renderGuests();
     });
   }
@@ -233,23 +253,32 @@
   function renderGuests() {
     var q = document.getElementById('guest-search').value.trim().toLowerCase();
     var filter = document.getElementById('guest-filter').value;
+    var sideFilter = document.getElementById('guest-side-filter').value;
     var tbody = document.getElementById('guests-tbody');
     tbody.innerHTML = '';
     var filtered = guestData.filter(function (g) {
       var full = (g.firstName + ' ' + g.lastName).toLowerCase();
       if (q && full.indexOf(q) === -1) return false;
-      if (filter === 'all') return true;
-      if (filter === 'pending') return !g.rsvpStatus;
-      return g.rsvpStatus === filter;
+      if (filter !== 'all') {
+        if (filter === 'pending') { if (g.rsvpStatus) return false; }
+        else if (g.rsvpStatus !== filter) return false;
+      }
+      if (sideFilter !== 'all') {
+        if (sideFilter === 'none') { if (g.side) return false; }
+        else if (g.side !== sideFilter) return false;
+      }
+      return true;
     });
     filtered.forEach(function (g) {
       var tr = document.createElement('tr');
       var statusTag = g.rsvpStatus === 'yes' ? '<span class="status-tag yes">มาร่วมงาน</span>'
-        : g.rsvpStatus === 'no' ? '<span class="status-tag no">ไม่ได้มาร่วมงาน</span>'
+        : g.rsvpStatus === 'no' ? '<span class="status-tag no">ไม่สะดวก</span>'
         : '<span class="status-tag pending">ยังไม่ตอบ</span>';
       tr.innerHTML =
         '<td>' + esc(g.firstName) + ' ' + esc(g.lastName) + '</td>' +
+        '<td>' + sideTag(g.side) + '</td>' +
         '<td>' + esc(g.position || '') + '</td>' +
+        '<td>' + esc(g.aka || '') + '</td>' +
         '<td>' + statusTag + '</td>' +
         '<td>' + (g.numAttending || '-') + '</td>' +
         '<td>' + esc(g.phone || '') + '</td>' +
@@ -267,6 +296,7 @@
 
   document.getElementById('guest-search').addEventListener('input', renderGuests);
   document.getElementById('guest-filter').addEventListener('change', renderGuests);
+  document.getElementById('guest-side-filter').addEventListener('change', renderGuests);
 
   document.getElementById('g-add-btn').addEventListener('click', function () {
     var firstName = document.getElementById('g-firstname').value.trim();
@@ -275,19 +305,24 @@
       token: getToken(),
       firstName: firstName,
       lastName: document.getElementById('g-lastname').value.trim(),
-      position: document.getElementById('g-position').value.trim()
+      position: document.getElementById('g-position').value.trim(),
+      aka: document.getElementById('g-aka').value.trim(),
+      side: document.getElementById('g-side').value
     }).then(function () {
       document.getElementById('g-firstname').value = '';
       document.getElementById('g-lastname').value = '';
       document.getElementById('g-position').value = '';
+      document.getElementById('g-aka').value = '';
+      document.getElementById('g-side').value = '';
       loadGuests();
     });
   });
 
   document.getElementById('export-csv-btn').addEventListener('click', function () {
-    var rows = [['ชื่อ', 'นามสกุล', 'ตำแหน่ง', 'สถานะ', 'จำนวน', 'เบอร์โทร', 'ข้อความ']];
+    var sideLabel = { groom: 'ฝั่งเจ้าบ่าว', bride: 'ฝั่งเจ้าสาว' };
+    var rows = [['ชื่อ', 'นามสกุล', 'ฝั่ง', 'ตำแหน่ง', 'AKA', 'สถานะ', 'จำนวน', 'เบอร์โทร', 'ข้อความ']];
     guestData.forEach(function (g) {
-      rows.push([g.firstName, g.lastName, g.position || '', g.rsvpStatus || 'pending', g.numAttending || '', g.phone || '', g.message || '']);
+      rows.push([g.firstName, g.lastName, sideLabel[g.side] || '', g.position || '', g.aka || '', g.rsvpStatus || 'pending', g.numAttending || '', g.phone || '', g.message || '']);
     });
     var csv = rows.map(function (r) {
       return r.map(function (cell) { return '"' + String(cell).replace(/"/g, '""') + '"'; }).join(',');
