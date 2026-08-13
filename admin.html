@@ -355,26 +355,78 @@
     return dt.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
   }
 
+  var editingExpenseId = null;
+
   function renderExpenses() {
     var tbody = document.getElementById('expenses-tbody');
     tbody.innerHTML = '';
     var today = new Date(); today.setHours(0, 0, 0, 0);
     expenseData.expenses.forEach(function (ex) {
+      var tr = document.createElement('tr');
+
+      if (String(editingExpenseId) === String(ex.id)) {
+        // ---- แถวโหมดแก้ไข ----
+        tr.innerHTML =
+          '<td><input type="text" class="form-control ee-item" value="' + esc(ex.item || '') + '"></td>' +
+          '<td><input type="number" class="form-control ee-amount" value="' + Number(ex.amount || 0) + '"></td>' +
+          '<td><input type="number" class="form-control ee-paid" value="' + Number(ex.paid || 0) + '"></td>' +
+          '<td colspan="2"><input type="date" class="form-control ee-duedate" value="' + esc(toDateInputValue(ex.dueDate)) + '"></td>' +
+          '<td style="white-space:nowrap;">' +
+            '<button class="icon-btn save-expense" data-id="' + ex.id + '" title="บันทึก">✅</button>' +
+            '<button class="icon-btn cancel-expense" title="ยกเลิก">✖️</button>' +
+          '</td>';
+        tbody.appendChild(tr);
+        return;
+      }
+
       var remaining = Number(ex.remaining) || 0;
       var dueDate = ex.dueDate ? new Date(ex.dueDate) : null;
       var overdue = remaining > 0 && dueDate && !isNaN(dueDate.getTime()) && dueDate < today;
       var statusTag = remaining <= 0
         ? '<span class="status-tag yes">จ่ายครบแล้ว</span>'
         : '<span class="status-tag ' + (overdue ? 'no' : 'pending') + '">' + fmtMoney(remaining) + ' ฿' + (overdue ? ' (เลยกำหนด)' : '') + '</span>';
-      var tr = document.createElement('tr');
       tr.innerHTML =
         '<td>' + esc(ex.item || '') + '</td>' +
         '<td>' + fmtMoney(ex.amount) + ' ฿</td>' +
         '<td>' + fmtMoney(ex.paid) + ' ฿</td>' +
         '<td>' + statusTag + '</td>' +
         '<td>' + esc(fmtDate(ex.dueDate)) + '</td>' +
-        '<td><button class="icon-btn del-expense" data-id="' + ex.id + '" title="ลบ">🗑️</button></td>';
+        '<td style="white-space:nowrap;">' +
+          '<button class="icon-btn edit-expense" data-id="' + ex.id + '" title="แก้ไข">✏️</button>' +
+          '<button class="icon-btn del-expense" data-id="' + ex.id + '" title="ลบ">🗑️</button>' +
+        '</td>';
       tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll('.edit-expense').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        editingExpenseId = btn.dataset.id;
+        renderExpenses();
+      });
+    });
+    tbody.querySelectorAll('.cancel-expense').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        editingExpenseId = null;
+        renderExpenses();
+      });
+    });
+    tbody.querySelectorAll('.save-expense').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var tr = btn.closest('tr');
+        var item = tr.querySelector('.ee-item').value.trim();
+        var amount = tr.querySelector('.ee-amount').value;
+        var paid = tr.querySelector('.ee-paid').value;
+        var dueDate = tr.querySelector('.ee-duedate').value;
+        if (!item || amount === '') { alert('กรุณากรอกรายการและจำนวนเงินให้ครบ'); return; }
+        window.WeddingAPI.post('adminUpdateExpense', {
+          token: getToken(), id: btn.dataset.id,
+          item: item, amount: amount, paid: paid, dueDate: dueDate
+        }).then(function () {
+          editingExpenseId = null;
+          loadExpenses();
+          loadOverview();
+        });
+      });
     });
     tbody.querySelectorAll('.del-expense').forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -382,6 +434,15 @@
         window.WeddingAPI.post('adminDeleteExpense', { token: getToken(), id: btn.dataset.id }).then(function () { loadExpenses(); loadOverview(); });
       });
     });
+  }
+
+  function toDateInputValue(d) {
+    if (!d) return '';
+    var dt = new Date(d);
+    if (isNaN(dt.getTime())) return '';
+    var mm = String(dt.getMonth() + 1).padStart(2, '0');
+    var dd = String(dt.getDate()).padStart(2, '0');
+    return dt.getFullYear() + '-' + mm + '-' + dd;
   }
 
   document.getElementById('e-add-btn').addEventListener('click', function () {
