@@ -347,6 +347,18 @@ img, video, iframe { max-width: 100%; display: block; }
   display: inline-block;
 }
 
+.rsvp-aka-tag {
+  margin-top: 8px;
+  margin-left: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--pink-light);
+  color: var(--pink-deep);
+  font-size: 0.86rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
 .alert {
   padding: 14px 18px;
   border-radius: 12px;
