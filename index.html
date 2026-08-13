@@ -484,7 +484,7 @@
         suggestBox.innerHTML = '';
         results.forEach(function (g) {
           var d = document.createElement('div');
-          d.textContent = (g.firstName + ' ' + (g.lastName || '')).trim() + (g.position ? ' · ' + g.position : '');
+          d.textContent = (g.firstName + ' ' + (g.lastName || '')).trim() + (g.description ? ' · ' + g.description : '');
           d.addEventListener('click', function () {
             nameInput.value = (g.firstName + ' ' + (g.lastName || '')).trim();
             guestIdInput.value = g.id;
