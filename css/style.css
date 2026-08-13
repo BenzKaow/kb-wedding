@@ -336,6 +336,17 @@ img, video, iframe { max-width: 100%; display: block; }
 }
 .autocomplete-list div:hover { background: var(--pink-light); }
 
+.rsvp-position-tag {
+  margin-top: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--sage-light);
+  color: #3f5638;
+  font-size: 0.86rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
 .alert {
   padding: 14px 18px;
   border-radius: 12px;
