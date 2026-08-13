@@ -112,7 +112,7 @@
           <div class="autocomplete-list" id="rsvp-suggestions" style="display:none;"></div>
           <input type="hidden" id="rsvp-guest-id">
           <div class="rsvp-position-tag" id="rsvp-position-tag" style="display:none;"></div>
-          <div class="rsvp-aka-tag" id="rsvp-aka-tag" style="display:none;"></div>
+          <div class="rsvp-description-tag" id="rsvp-description-tag" style="display:none;"></div>
         </div>
 
         <div class="form-group">
@@ -449,7 +449,7 @@
   var nameInput = document.getElementById('rsvp-name');
   var suggestBox = document.getElementById('rsvp-suggestions');
   var positionTag = document.getElementById('rsvp-position-tag');
-  var akaTag = document.getElementById('rsvp-aka-tag');
+  var descriptionTag = document.getElementById('rsvp-description-tag');
 
   pillYes.addEventListener('click', function () {
     pillYes.classList.add('selected', 'yes');
@@ -469,8 +469,8 @@
     guestIdInput.value = '';
     positionTag.style.display = 'none';
     positionTag.textContent = '';
-    akaTag.style.display = 'none';
-    akaTag.textContent = '';
+    descriptionTag.style.display = 'none';
+    descriptionTag.textContent = '';
     var q = nameInput.value.trim();
     clearTimeout(searchTimer);
     if (q.length < 2 || !window.WeddingAPI.isConfigured()) {
@@ -496,12 +496,12 @@
               positionTag.style.display = 'none';
               positionTag.textContent = '';
             }
-            if (g.aka) {
-              akaTag.textContent = '🏷️ AKA: ' + g.aka;
-              akaTag.style.display = 'block';
+            if (g.description) {
+              descriptionTag.textContent = '📝 Description: ' + g.description;
+              descriptionTag.style.display = 'block';
             } else {
-              akaTag.style.display = 'none';
-              akaTag.textContent = '';
+              descriptionTag.style.display = 'none';
+              descriptionTag.textContent = '';
             }
           });
           suggestBox.appendChild(d);
@@ -549,8 +549,8 @@
         pillNo.classList.remove('selected', 'no');
         positionTag.style.display = 'none';
         positionTag.textContent = '';
-        akaTag.style.display = 'none';
-        akaTag.textContent = '';
+        descriptionTag.style.display = 'none';
+        descriptionTag.textContent = '';
       } else {
         alertEl.innerHTML = '<div class="alert error">เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้งค่ะ</div>';
       }

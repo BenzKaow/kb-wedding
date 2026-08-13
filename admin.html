@@ -62,7 +62,7 @@
           <input type="text" id="g-firstname" class="form-control" placeholder="ชื่อ">
           <input type="text" id="g-lastname" class="form-control" placeholder="นามสกุล">
           <input type="text" id="g-position" class="form-control" placeholder="ตำแหน่ง/หมายเหตุ">
-          <input type="text" id="g-aka" class="form-control" placeholder="AKA / ชื่อเล่นอื่น">
+          <input type="text" id="g-description" class="form-control" placeholder="Description / รายละเอียดเพิ่มเติม">
           <select id="g-side" class="form-control">
             <option value="">ฝั่ง (ไม่ระบุ)</option>
             <option value="groom">ฝั่งเจ้าบ่าว</option>
@@ -92,7 +92,7 @@
       <div class="table-wrap">
         <table class="data-table">
           <thead>
-            <tr><th>ชื่อ-นามสกุล</th><th>ฝั่ง</th><th>ตำแหน่ง/หมายเหตุ</th><th>AKA</th><th>สถานะ</th><th>จำนวน</th><th>เบอร์โทร</th><th>ข้อความ</th><th></th></tr>
+            <tr><th>ชื่อ-นามสกุล</th><th>ฝั่ง</th><th>ตำแหน่ง/หมายเหตุ</th><th>Description</th><th>สถานะ</th><th>จำนวน</th><th>เบอร์โทร</th><th>ข้อความ</th><th></th></tr>
           </thead>
           <tbody id="guests-tbody"></tbody>
         </table>
@@ -278,7 +278,7 @@
         '<td>' + esc(g.firstName) + ' ' + esc(g.lastName) + '</td>' +
         '<td>' + sideTag(g.side) + '</td>' +
         '<td>' + esc(g.position || '') + '</td>' +
-        '<td>' + esc(g.aka || '') + '</td>' +
+        '<td>' + esc(g.description || '') + '</td>' +
         '<td>' + statusTag + '</td>' +
         '<td>' + (g.numAttending || '-') + '</td>' +
         '<td>' + esc(g.phone || '') + '</td>' +
@@ -306,13 +306,13 @@
       firstName: firstName,
       lastName: document.getElementById('g-lastname').value.trim(),
       position: document.getElementById('g-position').value.trim(),
-      aka: document.getElementById('g-aka').value.trim(),
+      description: document.getElementById('g-description').value.trim(),
       side: document.getElementById('g-side').value
     }).then(function () {
       document.getElementById('g-firstname').value = '';
       document.getElementById('g-lastname').value = '';
       document.getElementById('g-position').value = '';
-      document.getElementById('g-aka').value = '';
+      document.getElementById('g-description').value = '';
       document.getElementById('g-side').value = '';
       loadGuests();
     });
@@ -320,9 +320,9 @@
 
   document.getElementById('export-csv-btn').addEventListener('click', function () {
     var sideLabel = { groom: 'ฝั่งเจ้าบ่าว', bride: 'ฝั่งเจ้าสาว' };
-    var rows = [['ชื่อ', 'นามสกุล', 'ฝั่ง', 'ตำแหน่ง', 'AKA', 'สถานะ', 'จำนวน', 'เบอร์โทร', 'ข้อความ']];
+    var rows = [['ชื่อ', 'นามสกุล', 'ฝั่ง', 'ตำแหน่ง', 'Description', 'สถานะ', 'จำนวน', 'เบอร์โทร', 'ข้อความ']];
     guestData.forEach(function (g) {
-      rows.push([g.firstName, g.lastName, sideLabel[g.side] || '', g.position || '', g.aka || '', g.rsvpStatus || 'pending', g.numAttending || '', g.phone || '', g.message || '']);
+      rows.push([g.firstName, g.lastName, sideLabel[g.side] || '', g.position || '', g.description || '', g.rsvpStatus || 'pending', g.numAttending || '', g.phone || '', g.message || '']);
     });
     var csv = rows.map(function (r) {
       return r.map(function (cell) { return '"' + String(cell).replace(/"/g, '""') + '"'; }).join(',');
