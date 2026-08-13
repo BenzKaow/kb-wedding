@@ -111,6 +111,7 @@
           <input type="text" id="rsvp-name" class="form-control" placeholder="พิมพ์ชื่อของท่าน..." autocomplete="off" required>
           <div class="autocomplete-list" id="rsvp-suggestions" style="display:none;"></div>
           <input type="hidden" id="rsvp-guest-id">
+          <div class="rsvp-position-tag" id="rsvp-position-tag" style="display:none;"></div>
         </div>
 
         <div class="form-group">
@@ -120,7 +121,7 @@
               <input type="radio" name="attending" value="yes"> 💚 มาร่วมงาน
             </label>
             <label class="radio-pill no" id="pill-no">
-              <input type="radio" name="attending" value="no"> 💙 ไม่ได้มาร่วมงาน
+              <input type="radio" name="attending" value="no"> 💔 ไม่สะดวก
             </label>
           </div>
         </div>
@@ -446,6 +447,7 @@
   var guestIdInput = document.getElementById('rsvp-guest-id');
   var nameInput = document.getElementById('rsvp-name');
   var suggestBox = document.getElementById('rsvp-suggestions');
+  var positionTag = document.getElementById('rsvp-position-tag');
 
   pillYes.addEventListener('click', function () {
     pillYes.classList.add('selected', 'yes');
@@ -463,6 +465,8 @@
   var searchTimer;
   nameInput.addEventListener('input', function () {
     guestIdInput.value = '';
+    positionTag.style.display = 'none';
+    positionTag.textContent = '';
     var q = nameInput.value.trim();
     clearTimeout(searchTimer);
     if (q.length < 2 || !window.WeddingAPI.isConfigured()) {
@@ -481,6 +485,13 @@
             nameInput.value = (g.firstName + ' ' + (g.lastName || '')).trim();
             guestIdInput.value = g.id;
             suggestBox.style.display = 'none';
+            if (g.position) {
+              positionTag.textContent = '📍 ที่นั่งของท่าน: ' + g.position;
+              positionTag.style.display = 'block';
+            } else {
+              positionTag.style.display = 'none';
+              positionTag.textContent = '';
+            }
           });
           suggestBox.appendChild(d);
         });
@@ -525,6 +536,8 @@
         document.getElementById('rsvp-form').reset();
         pillYes.classList.remove('selected', 'yes');
         pillNo.classList.remove('selected', 'no');
+        positionTag.style.display = 'none';
+        positionTag.textContent = '';
       } else {
         alertEl.innerHTML = '<div class="alert error">เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้งค่ะ</div>';
       }
