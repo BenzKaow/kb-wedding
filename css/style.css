@@ -24,6 +24,7 @@ body {
   color: var(--text-dark);
   background: var(--cream);
   line-height: 1.7;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 h1, h2, h3, .script {
@@ -475,8 +476,10 @@ img, video, iframe { max-width: 100%; display: block; }
 .gift-popup-overlay {
   position: fixed; inset: 0;
   background: rgba(20, 16, 12, 0.6);
-  display: flex; align-items: center; justify-content: center;
+  display: flex; align-items: flex-start; justify-content: center;
+  overflow-y: auto;
   z-index: 210; padding: 20px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
 }
 .gift-popup {
   position: relative;
@@ -484,6 +487,7 @@ img, video, iframe { max-width: 100%; display: block; }
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   max-width: 380px; width: 100%;
+  margin: auto;
   padding: 28px 24px 24px;
   text-align: center;
   animation: lbFadeIn 0.25s ease;
@@ -665,7 +669,7 @@ img, video, iframe { max-width: 100%; display: block; }
 /* ---------- Footer ---------- */
 .site-footer {
   text-align: center;
-  padding: 40px 20px;
+  padding: 40px 20px calc(40px + env(safe-area-inset-bottom));
   color: var(--text-soft);
   font-size: 0.88rem;
 }
@@ -779,4 +783,6 @@ table.data-table th {
   .hero h1 { font-size: 2rem; }
   .hero .names-en { font-size: 2.2rem; }
   .section { padding: 40px 0; }
+  .site-footer { padding: 40px 20px calc(64px + env(safe-area-inset-bottom)); }
+  .slip-form { margin-bottom: 16px; }
 }
