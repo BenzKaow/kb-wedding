@@ -122,7 +122,7 @@
               <input type="radio" name="attending" value="yes"> 💚 มาร่วมงาน
             </label>
             <label class="radio-pill no" id="pill-no">
-              <input type="radio" name="attending" value="no"> 💙 ไม่ได้มาร่วมงาน
+              <input type="radio" name="attending" value="no"> 💔 ไม่สะดวก
             </label>
           </div>
         </div>
@@ -176,6 +176,19 @@
     <div class="gift-card">
       <img src="assets/gift-card.jpg" alt="ขอบคุณที่มาร่วมงาน และ QR สำหรับร่วมอวยพร" class="gift-card-img">
     </div>
+    <div class="slip-form" id="slip-form-main">
+      <h4>แจ้งโอนเงิน (แนบสลิป)</h4>
+      <div class="form-group">
+        <label for="slip-name-main">ชื่อผู้โอน</label>
+        <input type="text" id="slip-name-main" class="form-control" placeholder="ชื่อ-นามสกุลของท่าน">
+      </div>
+      <div class="form-group">
+        <label for="slip-file-main">แนบรูปสลิป</label>
+        <input type="file" id="slip-file-main" class="form-control" accept="image/*">
+      </div>
+      <button class="btn btn-block" id="slip-submit-main">แนบสลิป &amp; แจ้งโอน</button>
+      <div id="slip-alert-main"></div>
+    </div>
   </div>
 </section>
 
@@ -189,6 +202,30 @@
   <button class="lightbox-nav lightbox-prev" id="home-lightbox-prev" aria-label="ก่อนหน้า">&#8249;</button>
   <button class="lightbox-nav lightbox-next" id="home-lightbox-next" aria-label="ถัดไป">&#8250;</button>
   <div class="lightbox-inner" id="home-lightbox-inner"></div>
+</div>
+
+<!-- ป๊อปอัพ QR ร่วมยินดี — เด้งขึ้นเฉพาะตอนแขกตอบ RSVP ว่า "ไม่มาร่วมงาน" -->
+<div class="gift-popup-overlay" id="gift-popup-overlay" style="display:none;">
+  <div class="gift-popup">
+    <span class="gift-popup-close" id="gift-popup-close">&times;</span>
+    <h3>เสียดายที่พลาดงานนี้ไปนะคะ 🥲</h3>
+    <p>ฝากทำบุญร่วมยินดีกับบ่าวสาวผ่าน QR นี้ได้เลยค่ะ ขอบคุณมากๆ นะคะ 💝</p>
+    <img src="assets/gift-card.jpg" alt="QR สำหรับร่วมอวยพร" class="gift-popup-img">
+    <div class="slip-form" id="slip-form-popup">
+      <h4>แจ้งโอนเงิน (แนบสลิป)</h4>
+      <div class="form-group">
+        <label for="slip-name-popup">ชื่อผู้โอน</label>
+        <input type="text" id="slip-name-popup" class="form-control" placeholder="ชื่อ-นามสกุลของท่าน">
+      </div>
+      <div class="form-group">
+        <label for="slip-file-popup">แนบรูปสลิป</label>
+        <input type="file" id="slip-file-popup" class="form-control" accept="image/*">
+      </div>
+      <button class="btn btn-block" id="slip-submit-popup">แนบสลิป &amp; แจ้งโอน</button>
+      <div id="slip-alert-popup"></div>
+    </div>
+    <button class="btn outline btn-block" id="gift-popup-ok-btn" style="margin-top:10px;">ปิดหน้าต่างนี้</button>
+  </div>
 </div>
 
 <script src="js/config.js"></script>
@@ -451,6 +488,67 @@
   var positionTag = document.getElementById('rsvp-position-tag');
   var descriptionTag = document.getElementById('rsvp-description-tag');
 
+  // ---------- ป๊อปอัพ QR ร่วมยินดี (เด้งเฉพาะตอนตอบ "ไม่มาร่วมงาน") ----------
+  var giftPopupOverlay = document.getElementById('gift-popup-overlay');
+  function openGiftPopup() { giftPopupOverlay.style.display = 'flex'; }
+  function closeGiftPopup() { giftPopupOverlay.style.display = 'none'; }
+  document.getElementById('gift-popup-close').addEventListener('click', closeGiftPopup);
+  document.getElementById('gift-popup-ok-btn').addEventListener('click', closeGiftPopup);
+  giftPopupOverlay.addEventListener('click', function (e) {
+    if (e.target === giftPopupOverlay) closeGiftPopup();
+  });
+
+  // ---------- แจ้งโอนเงิน: แนบรูปสลิป + ชื่อผู้โอน (ใช้ร่วมกันทั้งส่วน "ร่วมยินดี" หลัก และในป๊อปอัพ) ----------
+  function wireSlipForm(suffix) {
+    var nameEl = document.getElementById('slip-name-' + suffix);
+    var fileEl = document.getElementById('slip-file-' + suffix);
+    var btnEl = document.getElementById('slip-submit-' + suffix);
+    var alertEl = document.getElementById('slip-alert-' + suffix);
+    if (!nameEl || !fileEl || !btnEl || !alertEl) return;
+
+    btnEl.addEventListener('click', function () {
+      alertEl.innerHTML = '';
+      var file = fileEl.files && fileEl.files[0];
+      if (!file) {
+        alertEl.innerHTML = '<div class="alert error">กรุณาแนบรูปสลิปก่อนนะคะ</div>';
+        return;
+      }
+      if (!window.WeddingAPI.isConfigured()) {
+        alertEl.innerHTML = '<div class="alert error">ระบบยังไม่ได้เชื่อมต่อ API (สำหรับผู้ดูแล: ใส่ API_URL ใน js/config.js)</div>';
+        return;
+      }
+      btnEl.disabled = true;
+      btnEl.textContent = 'กำลังส่ง...';
+      var reader = new FileReader();
+      reader.onload = function () {
+        var base64 = reader.result.split(',')[1];
+        window.WeddingAPI.post('submitGiftSlip', {
+          name: nameEl.value.trim(),
+          filename: file.name,
+          mimeType: file.type,
+          base64Data: base64
+        }).then(function (res) {
+          btnEl.disabled = false;
+          btnEl.textContent = 'แนบสลิป & แจ้งโอน';
+          if (res && res.success) {
+            alertEl.innerHTML = '<div class="alert success">ได้รับสลิปแล้วค่ะ ขอบคุณมากๆ นะคะ 🙏💝</div>';
+            nameEl.value = '';
+            fileEl.value = '';
+          } else {
+            alertEl.innerHTML = '<div class="alert error">ส่งไม่สำเร็จ: ' + ((res && res.error) || 'unknown') + '</div>';
+          }
+        }).catch(function () {
+          btnEl.disabled = false;
+          btnEl.textContent = 'แนบสลิป & แจ้งโอน';
+          alertEl.innerHTML = '<div class="alert error">เชื่อมต่อไม่สำเร็จ กรุณาลองใหม่อีกครั้งค่ะ</div>';
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+  wireSlipForm('main');
+  wireSlipForm('popup');
+
   pillYes.addEventListener('click', function () {
     pillYes.classList.add('selected', 'yes');
     pillNo.classList.remove('selected', 'no');
@@ -544,6 +642,7 @@
       btn.textContent = 'ส่งคำตอบยืนยัน';
       if (res && res.success) {
         alertEl.innerHTML = '<div class="alert success">ขอบคุณค่ะ! บันทึกคำตอบของท่านเรียบร้อยแล้ว 🌸</div>';
+        var wasNotAttending = attendingEl.value === 'no';
         document.getElementById('rsvp-form').reset();
         pillYes.classList.remove('selected', 'yes');
         pillNo.classList.remove('selected', 'no');
@@ -551,6 +650,7 @@
         positionTag.textContent = '';
         descriptionTag.style.display = 'none';
         descriptionTag.textContent = '';
+        if (wasNotAttending) { openGiftPopup(); }
       } else {
         alertEl.innerHTML = '<div class="alert error">เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้งค่ะ</div>';
       }
