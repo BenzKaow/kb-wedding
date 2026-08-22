@@ -39,6 +39,7 @@
       <button class="tab-btn" data-tab="guests">แขก &amp; RSVP</button>
       <button class="tab-btn" data-tab="expenses">ค่าใช้จ่าย</button>
       <button class="tab-btn" data-tab="gallery">รูปภาพ/วีดีโอ</button>
+      <button class="tab-btn" data-tab="slips">สลิปโอนเงิน</button>
     </div>
 
     <!-- OVERVIEW -->
@@ -135,6 +136,12 @@
       <p style="color:var(--text-soft); margin-bottom:16px;">จัดการรูปภาพและวีดีโอทั้งหมดที่แขกอัพโหลด (กดลบเพื่อนำออกจากเว็บ)</p>
       <div class="gallery-grid" id="admin-gallery-grid"></div>
     </div>
+
+    <!-- GIFT SLIPS -->
+    <div class="tab-panel" id="panel-slips">
+      <p style="color:var(--text-soft); margin-bottom:16px;">สลิปโอนเงินที่แขกแนบมาพร้อมชื่อ ตอนแจ้งโอนเงินร่วมยินดี</p>
+      <div class="gallery-grid" id="admin-slips-grid"></div>
+    </div>
   </div>
 </div>
 
@@ -155,6 +162,7 @@
     loadGuests();
     loadExpenses();
     loadGallery();
+    loadGiftSlips();
   }
 
   // ---------- Login ----------
@@ -491,6 +499,37 @@
           e.stopPropagation();
           if (!confirm('ลบไฟล์นี้ใช่หรือไม่?')) return;
           window.WeddingAPI.post('adminDeleteMedia', { token: getToken(), id: btn.dataset.id }).then(function () { loadGallery(); });
+        });
+      });
+    });
+  }
+
+  // ---------- Gift Slips (สลิปโอนเงิน) ----------
+  function loadGiftSlips() {
+    window.WeddingAPI.get('adminGetGiftSlips', { token: getToken() }).then(function (res) {
+      var grid = document.getElementById('admin-slips-grid');
+      grid.innerHTML = '';
+      (res.slips || []).forEach(function (item) {
+        var div = document.createElement('div');
+        div.className = 'slip-item';
+        div.innerHTML =
+          '<img src="' + item.thumbUrl + '" loading="lazy" alt="" data-full="' + esc(item.url) + '">' +
+          '<div class="slip-item-info">' +
+            '<div>' +
+              '<div class="slip-item-name">' + esc(item.name || 'ไม่ระบุชื่อ') + '</div>' +
+              '<div class="slip-item-date">' + esc(fmtDate(item.createdAt)) + '</div>' +
+            '</div>' +
+            '<button class="icon-btn del-slip" data-id="' + item.id + '" title="ลบ">🗑️</button>' +
+          '</div>';
+        grid.appendChild(div);
+      });
+      grid.querySelectorAll('.slip-item img').forEach(function (img) {
+        img.addEventListener('click', function () { window.open(img.dataset.full, '_blank'); });
+      });
+      grid.querySelectorAll('.del-slip').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          if (!confirm('ลบสลิปนี้ใช่หรือไม่?')) return;
+          window.WeddingAPI.post('adminDeleteGiftSlip', { token: getToken(), id: btn.dataset.id }).then(function () { loadGiftSlips(); });
         });
       });
     });
