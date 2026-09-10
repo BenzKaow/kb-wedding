@@ -426,14 +426,13 @@ var rowsLayout = [3];
     wrap.style.display = 'block';
   }
 
-  // ---------- video: custom play button overlay ----------
+    // ---------- video: autoplay + loop, ปุ่มไว้เปิด/ปิดเสียงแทนปุ่มเล่น ----------
   var pwPlayBtn = document.getElementById('pw-play-btn');
   if (pwPlayBtn) {
     pwPlayBtn.addEventListener('click', function () {
       var vid = document.getElementById('pw-video');
-      vid.setAttribute('controls', '');
-      vid.play();
-      pwPlayBtn.style.display = 'none';
+      vid.muted = !vid.muted;
+      pwPlayBtn.textContent = vid.muted ? '🔇' : '🔊';
     });
   }
 
