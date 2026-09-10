@@ -427,14 +427,12 @@ var rowsLayout = [3];
   }
 
       // ---------- video: autoplay + loop, ปุ่มไว้เปิด/ปิดเสียงแทนปุ่มเล่น ----------
-  var pwPlayBtn = document.getElementById('pw-play-btn');
+    var pwPlayBtn = document.getElementById('pw-play-btn');
   if (pwPlayBtn) {
-    pwPlayBtn.style.display = 'flex';
     pwPlayBtn.addEventListener('click', function () {
       var vid = document.getElementById('pw-video');
-      vid.muted = !vid.muted;
-      pwPlayBtn.textContent = vid.muted ? '🔇' : '🔊';
-      pwPlayBtn.style.display = 'flex';
+      vid.muted = false;
+      pwPlayBtn.style.display = 'none';
     });
   }
 
